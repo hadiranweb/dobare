@@ -6,6 +6,7 @@ export const products = pgTable("products", {
   description: text("description").notNull(),
   price: integer("price").notNull(),
   imageUrl: text("image_url").notNull(),
+  thumbUrl: text("thumb_url"),
   category: text("category").notNull().default("متفرقه"),
   condition: text("condition").notNull().default("تمیز و سالم"),
   available: boolean("available").notNull().default(true),

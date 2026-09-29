@@ -5,5 +5,5 @@ export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   const products = await getProducts();
-  return <Storefront initialProducts={products.map(({ id, title, description, price, imageUrl, category, condition, available, reservedAt }) => ({ id, title, description, price, imageUrl, category, condition, available, reservedAt: reservedAt ? reservedAt.toISOString() : null }))} />;
+  return <Storefront initialProducts={products.map(({ id, title, description, price, imageUrl, thumbUrl, category, condition, available, reservedAt }) => ({ id, title, description, price, imageUrl, thumbUrl, category, condition, available, reservedAt: reservedAt ? reservedAt.toISOString() : null }))} />;
 }

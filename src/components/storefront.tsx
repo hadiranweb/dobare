@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { ArrowLeft, ArrowUpLeft, Check, ChevronDown, Clock, Heart, Leaf, Menu, Phone, RotateCcw, Send, Sparkles, X } from "lucide-react";
 
-type Product = { id: number; title: string; description: string; price: number; imageUrl: string; category: string; condition: string; available: boolean; reservedAt: string | null };
+type Product = { id: number; title: string; description: string; price: number; imageUrl: string; thumbUrl: string | null; category: string; condition: string; available: boolean; reservedAt: string | null };
 const formatPrice = (price: number) => new Intl.NumberFormat("fa-IR").format(price);
 const heroImage = "https://images.pexels.com/photos/15747248/pexels-photo-15747248.jpeg?auto=compress&cs=tinysrgb&w=1400";
 
@@ -83,7 +83,7 @@ export default function Storefront({ initialProducts }: { initialProducts: Produ
         <div className="section-heading"><div><div className="section-kicker"><span>✳</span> از خونه‌ی من به خونه‌ی تو</div><h2>وسایل دوست‌داشتنی</h2><p>یه گشتی بزن، شاید اینجا چیزی منتظر تو باشه.</p></div><div className="section-count">{new Intl.NumberFormat("fa-IR").format(initialProducts.length)} تا چیزِ خوب اینجاست <span>↙</span></div></div>
         <div className="filters" role="group" aria-label="فیلتر دسته‌بندی">{categories.map(c => <button type="button" key={c} className={category === c ? "filter active" : "filter"} onClick={() => setCategory(c)}>{c}</button>)}</div>
         <div className="product-grid">{visible.map((product, index) => <article className="product-card" key={product.id}>
-          <div className="product-image-wrap"><img src={product.imageUrl} alt={product.title} loading={index > 2 ? "lazy" : "eager"} /><span className={product.available ? "condition-badge" : product.reservedAt ? "condition-badge reserved" : "condition-badge sold"}><span className="badge-dot" /> {product.available ? product.condition : product.reservedAt ? "رزرو شده" : "واگذار شده"}</span></div>
+          <div className="product-image-wrap"><img src={product.thumbUrl || product.imageUrl} alt={product.title} loading={index > 2 ? "lazy" : "eager"} /><span className={product.available ? "condition-badge" : product.reservedAt ? "condition-badge reserved" : "condition-badge sold"}><span className="badge-dot" /> {product.available ? product.condition : product.reservedAt ? "رزرو شده" : "واگذار شده"}</span></div>
           <div className="product-content"><div className="product-category">{product.category}</div><h3>{product.title}</h3><p>{product.description}</p><div className="product-bottom"><div className="price"><strong>{formatPrice(product.price)}</strong><span>تومان</span></div><button className="interest-button" onClick={() => openInterest(product)} disabled={!product.available} aria-label={product.available ? `درخواست ${product.title}` : product.reservedAt ? `${product.title} فعلاً رزرو شده` : `${product.title} واگذار شده`}>{product.available ? <ArrowUpLeft size={21} /> : product.reservedAt ? <Clock size={19} /> : <Check size={19} />}</button></div></div>
         </article>)}</div>
         {visible.length === 0 && <div className="empty-state">فعلاً وسیله‌ای در این دسته نیست. یه سر به بقیه‌ی وسایل بزن!</div>}
