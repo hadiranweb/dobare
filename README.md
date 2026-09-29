@@ -127,3 +127,8 @@ npm install
 npm run migrate     # ساخت جداول
 npm run dev         # http://localhost:3000
 ```
+
+## 🖋 اعتبارات
+
+- فونت [وزیرمتن](https://github.com/rastikerdar/vazirmatn) اثر صابر رستیکردار — با مجوز OFL (فایل `public/fonts/OFL.txt`)، به‌صورت محلی میزبانی می‌شود
+- تصویر هیرو: تولیدشده با هوش مصنوعی
