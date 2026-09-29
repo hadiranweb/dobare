@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ArrowLeft, ArrowUpLeft, Check, ChevronDown, Heart, Leaf, Menu, Phone, RotateCcw, Sparkles, X } from "lucide-react";
+import { ArrowLeft, ArrowUpLeft, Check, ChevronDown, Heart, Leaf, Menu, Phone, RotateCcw, Send, Sparkles, X } from "lucide-react";
 
 type Product = { id: number; title: string; description: string; price: number; imageUrl: string; category: string; condition: string; available: boolean };
 const formatPrice = (price: number) => new Intl.NumberFormat("fa-IR").format(price);
@@ -11,6 +11,9 @@ export default function Storefront({ initialProducts }: { initialProducts: Produ
   const [category, setCategory] = useState("همه‌ی وسایل");
   const [selected, setSelected] = useState<Product | null>(null);
   const [phone, setPhone] = useState("");
+  const [name, setName] = useState("");
+  const [message, setMessage] = useState("");
+  const [contact, setContact] = useState<{ phone?: string; telegram?: string } | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
@@ -26,16 +29,17 @@ export default function Storefront({ initialProducts }: { initialProducts: Produ
     return () => { document.removeEventListener("keydown", close); document.body.style.overflow = ""; };
   }, [selected]);
 
-  const openInterest = (product: Product) => { setSelected(product); setPhone(""); setError(""); setSuccess(false); };
+  const openInterest = (product: Product) => { setSelected(product); setPhone(""); setName(""); setMessage(""); setError(""); setSuccess(false); setContact(null); };
   const submitInterest = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selected) return;
     setSubmitting(true); setError("");
     try {
-      const response = await fetch("/api/inquiries", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ productId: selected.id, phone }) });
+      const response = await fetch("/api/inquiries", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ productId: selected.id, phone, name, message }) });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "مشکلی پیش اومد. لطفاً دوباره تلاش کن.");
       setSuccess(true);
+      setContact(data.contact || null);
     } catch (err) { setError(err instanceof Error ? err.message : "مشکلی پیش اومد."); }
     finally { setSubmitting(false); }
   };
@@ -90,6 +94,6 @@ export default function Storefront({ initialProducts }: { initialProducts: Produ
     </main>
     <footer className="footer"><div className="container footer-inner"><a href="#top" className="brand footer-brand"><span className="brand-symbol"><RotateCcw size={18} /></span><span>دوباره<span className="brand-dot">.</span></span></a><span>چیزهای خوب، یک زندگی تازه ♡</span><a href="#top">برگشت به بالا ↑</a></div></footer>
 
-    {selected && <div className="modal-backdrop" onMouseDown={(e) => { if (e.target === e.currentTarget) setSelected(null); }}><div className="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title"><button className="modal-close" aria-label="بستن" onClick={() => setSelected(null)}><X size={21} /></button>{success ? <div className="success-view"><div className="success-icon"><Check size={32} /></div><h2 id="modal-title">شماره‌ت رسید! ♡</h2><p>چه خوب که «{selected.title}» رو پسندیدی. به‌زودی باهات تماس می‌گیرم تا با هم هماهنگ کنیم.</p><button className="button button-primary" onClick={() => setSelected(null)}>خیلی هم عالی <ArrowLeft size={18} /></button></div> : <><div className="modal-top"><img src={selected.imageUrl} alt={selected.title} /><div><span>این یکی رو پسندیدی؟</span><h2 id="modal-title">{selected.title}</h2><p>{formatPrice(selected.price)} تومان</p></div></div><div className="modal-body"><h3>بذار باهات تماس بگیرم ☎</h3><p>فقط شماره موبایلت رو بذار. برای هماهنگی این وسیله باهات تماس می‌گیرم؛ همین و بس!</p><form onSubmit={submitInterest}><label htmlFor="phone">شماره موبایل شما</label><input id="phone" type="tel" inputMode="tel" dir="ltr" placeholder="0912 123 4567" value={phone} onChange={e => setPhone(e.target.value)} required autoFocus /><div className="privacy-note"><span>🔒</span> شماره‌ت فقط برای تماس درباره‌ی همین وسیله استفاده می‌شه.</div>{error && <div className="form-error" role="alert">{error}</div>}<button className="button button-primary modal-submit" disabled={submitting}>{submitting ? "در حال ثبت..." : "شماره‌م رو ثبت کن"}<ArrowLeft size={18} /></button></form></div></>}</div></div>}
+    {selected && <div className="modal-backdrop" onMouseDown={(e) => { if (e.target === e.currentTarget) setSelected(null); }}><div className="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title"><button className="modal-close" aria-label="بستن" onClick={() => setSelected(null)}><X size={21} /></button>{success ? <div className="success-view"><div className="success-icon"><Check size={32} /></div><h2 id="modal-title">شماره‌ت رسید! ♡</h2><p>چه خوب که «{selected.title}» رو پسندیدی. به‌زودی باهات تماس می‌گیرم تا با هم هماهنگ کنیم.</p>{contact ? <div className="contact-card"><span className="contact-title">اگه عجله داری، مستقیم با من در تماس باش:</span>{contact.phone && <a className="contact-phone" href={`tel:${contact.phone}`} dir="ltr">{contact.phone.replace(/(\d{4})(\d{3})(\d{4})/, "$1 $2 $3")}</a>}<div className="contact-actions">{contact.telegram && <a className="button contact-telegram" href={`https://t.me/${contact.telegram}`} target="_blank" rel="noreferrer">تلگرام <Send size={16} /></a>}<button className="button button-primary" onClick={() => setSelected(null)}>بله <Check size={16} /></button></div></div> : <button className="button button-primary" onClick={() => setSelected(null)}>خیلی هم عالی <ArrowLeft size={18} /></button>}</div> : <><div className="modal-top"><img src={selected.imageUrl} alt={selected.title} /><div><span>این یکی رو پسندیدی؟</span><h2 id="modal-title">{selected.title}</h2><p>{formatPrice(selected.price)} تومان</p></div></div><div className="modal-body"><h3>بذار باهات تماس بگیرم ☎</h3><p>فقط شماره موبایلت رو بذار. برای هماهنگی این وسیله باهات تماس می‌گیرم؛ همین و بس!</p><form onSubmit={submitInterest}><label htmlFor="phone">شماره موبایل شما</label><input id="phone" type="tel" inputMode="tel" dir="ltr" placeholder="0912 123 4567" value={phone} onChange={e => setPhone(e.target.value)} required autoFocus /><label htmlFor="buyer-name">نام شما <span className="optional-tag">(اختیاری)</span></label><input id="buyer-name" type="text" className="optional-field" maxLength={80} value={name} onChange={e => setName(e.target.value)} placeholder="مثلاً سارا" /><label htmlFor="buyer-message">یه پیام کوتاه <span className="optional-tag">(اختیاری)</span></label><textarea id="buyer-message" className="optional-field" rows={2} maxLength={500} value={message} onChange={e => setMessage(e.target.value)} placeholder="مثلاً: عصرها بعد از ۶ پاسخ می‌دم..." /><div className="privacy-note"><span>🔒</span> اطلاعات‌ت فقط برای هماهنگی همین وسیله استفاده می‌شه.</div>{error && <div className="form-error" role="alert">{error}</div>}<button className="button button-primary modal-submit" disabled={submitting}>{submitting ? "در حال ثبت..." : "شماره‌م رو ثبت کن"}<ArrowLeft size={18} /></button></form></div></>}</div></div>}
   </div>;
 }

@@ -17,6 +17,8 @@ export const inquiries = pgTable("inquiries", {
   productId: integer("product_id").references(() => products.id, { onDelete: "set null" }),
   productTitle: text("product_title").notNull(),
   phone: text("phone").notNull(),
+  name: text("name"),
+  message: text("message"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
