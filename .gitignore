@@ -19,3 +19,8 @@ next-env.d.ts
 *.tsbuildinfo
 *.log
 .DS_Store
+
+# فایل‌های توکن و کش npm (احتیاط — هرگز کامیت نشوند)
+*token*
+.npm/
+uploads/

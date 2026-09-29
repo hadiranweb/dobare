@@ -1,0 +1,9 @@
+{
+  "platform": "next",
+  "app": "dobare",
+  "port": 3000,
+  "next": {
+    "mirror": false,
+    "nodeVersion": "22"
+  }
+}

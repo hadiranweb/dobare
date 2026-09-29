@@ -2,7 +2,16 @@
 
 ویترین آنلاین وسایل دست دوم — کارت‌های محصول، ثبت درخواست با شماره تماس، رزرو خودکار ۶ ساعته، پنل مدیریت و اعلان تلگرام.
 
-ساخته‌شده با Next.js 16 + PostgreSQL + Drizzle ORM + Tailwind، آماده‌ی اجرا با Docker.
+ساخته‌شده با Next.js 16 + PostgreSQL + Drizzle ORM + Tailwind.
+
+## ☁️ استقرار — دو مسیر
+
+| مسیر | ابزار | وضعیت |
+|---|---|---|
+| **لیارا (اصلی)** | GitHub Actions — هر push به `main` خودکار دیپلوی می‌شود | راهنما: [`docs/liara-console-setup.md`](docs/liara-console-setup.md) |
+| VPS شخصی | Docker + Compose + Caddy (فایل‌ها در ریپو نگه داشته شده‌اند) | بخش «نصب روی سرور» پایین همین فایل |
+
+ساخته‌شده با Next.js 16 + PostgreSQL + Drizzle ORM + Tailwind.
 
 ---
 
