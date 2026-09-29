@@ -1,0 +1,20 @@
+{
+	# ایمیل برای اعلان انقضای گواهی SSL (Let's Encrypt)
+	email {$ACME_EMAIL}
+}
+
+{$DOMAIN} {
+	# فشرده‌سازی پاسخ‌ها
+	encode zstd gzip
+
+	# اپ Next.js داخل شبکه‌ی داکر
+	reverse_proxy app:3000
+
+	# هدرهای امنیتی
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "SAMEORIGIN"
+		Referrer-Policy "strict-origin-when-cross-origin"
+	}
+}

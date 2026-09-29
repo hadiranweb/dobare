@@ -1,0 +1,20 @@
+# چیزهایی که وارد ایمیج داکر نمی‌شوند
+node_modules
+.next
+out
+build
+dist
+
+# داده‌های زمان اجرا و بکاپ‌ها (روی volume هستند، نه داخل ایمیج)
+data
+backups
+
+# اسرار — هرگز داخل ایمیج نروند
+.env
+.env.*
+!.env.example
+
+# ابزارهای توسعه
+.git
+.gitignore
+*.md

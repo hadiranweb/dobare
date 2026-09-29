@@ -1,5 +1,8 @@
 import type { NextConfig } from "next";
 
-const nextConfig: NextConfig = {};
+// خروجی standalone برای ایمیج داکر سبک (فقط فایل‌های لازم برای اجرا)
+const nextConfig: NextConfig = {
+  output: "standalone",
+};
 
 export default nextConfig;
