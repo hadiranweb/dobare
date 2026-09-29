@@ -1,6 +1,7 @@
 import { db } from "@/db";
 import { inquiries, products } from "@/db/schema";
 import { isAdmin } from "@/lib/admin-auth";
+import { RESERVATION_HOURS } from "@/lib/reservation";
 import { desc, eq } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
@@ -9,7 +10,7 @@ const unauthorized = () => Response.json({ error: "دسترسی مجاز نیس�
 export async function GET(request: Request) {
   if (!isAdmin(request)) return unauthorized();
   const [items, leads] = await Promise.all([db.select().from(products).orderBy(desc(products.id)), db.select().from(inquiries).orderBy(desc(inquiries.createdAt))]);
-  return Response.json({ products: items, inquiries: leads });
+  return Response.json({ products: items, inquiries: leads, reservationHours: RESERVATION_HOURS });
 }
 
 function parseProduct(body: Record<string, unknown>) {
@@ -21,7 +22,9 @@ function parseProduct(body: Record<string, unknown>) {
   const price = Number(body.price);
   try { const url = new URL(imageUrl); if (!["http:", "https:"].includes(url.protocol)) throw new Error(); } catch { throw new Error("آدرس عکس معتبر نیست."); }
   if (!title || !description || !Number.isInteger(price) || price < 0) throw new Error("نام، توضیح و قیمت معتبر وارد کنید.");
-  return { title, description, category, condition, imageUrl, price, available: body.available !== false };
+  const available = body.available !== false;
+  // اگر از طریق فرم «موجود» علامت بخورد، هر رزروی هم پاک می‌شود
+  return { title, description, category, condition, imageUrl, price, available, ...(available ? { reservedAt: null } : {}) };
 }
 
 export async function POST(request: Request) {

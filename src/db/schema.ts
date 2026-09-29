@@ -9,6 +9,7 @@ export const products = pgTable("products", {
   category: text("category").notNull().default("متفرقه"),
   condition: text("condition").notNull().default("تمیز و سالم"),
   available: boolean("available").notNull().default(true),
+  reservedAt: timestamp("reserved_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
