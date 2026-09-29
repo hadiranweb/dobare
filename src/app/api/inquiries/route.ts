@@ -1,9 +1,15 @@
 import { db } from "@/db";
 import { inquiries, products } from "@/db/schema";
 import { RESERVATION_HOURS, releaseExpiredReservations } from "@/lib/reservation";
+import { clientIp, take } from "@/lib/rate-limit";
 import { and, eq } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
+
+const tooMany = (sec: number) => Response.json(
+  { error: "این‌قدر تند! یه کم صبر کن و بعد دوباره تلاش کن." },
+  { status: 429, headers: { "Retry-After": String(sec) } }
+);
 
 function normalizePhone(input: string) {
   const latin = input.replace(/[۰-۹]/g, c => String("۰۱۲۳۴۵۶۷۸۹".indexOf(c))).replace(/[٠-٩]/g, c => String("٠١٢٣٤٥٦٧٨٩".indexOf(c))).replace(/[\s()-]/g, "");
@@ -14,6 +20,13 @@ function normalizePhone(input: string) {
 
 export async function POST(request: Request) {
   try {
+    // ضد اسپم: حداکثر ۳ درخواست در ۱۰ دقیقه و ۱۰ درخواست در ۲۴ ساعت برای هر IP
+    const ip = clientIp(request);
+    const burst = take(`inquiry:${ip}:burst`, 3, 10 * 60 * 1000);
+    if (!burst.allowed) return tooMany(burst.retryAfterSec);
+    const daily = take(`inquiry:${ip}:daily`, 10, 24 * 60 * 60 * 1000);
+    if (!daily.allowed) return tooMany(daily.retryAfterSec);
+
     // قبل از بررسی، رزروهای منقضی‌شده را آزاد کن
     await releaseExpiredReservations();
 
