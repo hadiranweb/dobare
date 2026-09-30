@@ -2,6 +2,7 @@ import { db } from "@/db";
 import { inquiries, products } from "@/db/schema";
 import { RESERVATION_HOURS, releaseExpiredReservations } from "@/lib/reservation";
 import { clientIp, take } from "@/lib/rate-limit";
+import { statusKeyboard, telegramCall } from "@/lib/telegram";
 import { and, eq } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
@@ -56,9 +57,8 @@ export async function POST(request: Request) {
       if (name) lines.push(`نام خریدار: ${name}`);
       lines.push(`شماره تماس: ${phone}`);
       if (message) lines.push(`پیام: ${message}`);
-      try {
-        await fetch(`https://api.telegram.org/bot${token}/sendMessage`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ chat_id: chatId, text: lines.join("\n") }), signal: AbortSignal.timeout(5000) });
-      } catch (error) { console.error("Telegram notification failed:", error); }
+      // دکمه‌های تغییر وضعیت، مستقیم زیر پیام — بدون باز کردن پنل
+      await telegramCall("sendMessage", { chat_id: chatId, text: lines.join("\n"), reply_markup: statusKeyboard(product.id) });
     }
 
     // اطلاعات تماس فروشنده فقط بعد از ثبت موفق در اختیار خریدار قرار می‌گیرد

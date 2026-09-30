@@ -38,7 +38,9 @@
 | `NEXT_PUBLIC_SITE_URL` | توصیه | مثل `https://dobare.liara.run` — **بیلدتایم است؛ بعد از تغییر، دیپلوی جدید لازم است** |
 | `RESERVATION_HOURS` | اختیاری | پیش‌فرض ۶ |
 | `SELLER_PHONE` و `SELLER_TELEGRAM` | اختیاری | نمایش به خریدار بعد از ثبت درخواست |
-| `TELEGRAM_BOT_TOKEN` و `TELEGRAM_CHAT_ID` | اختیاری | اعلان درخواست‌ها |
+| `TELEGRAM_BOT_TOKEN` و `TELEGRAM_CHAT_ID` | اختیاری | اعلان درخواست‌ها + دستورهای مدیریتی |
+| `TELEGRAM_WEBHOOK_SECRET` | برای بات | رشته‌ی تصادفی (مثلاً خروجی `openssl rand -hex 24`) — امنیت وب‌هوک |
+| `TELEGRAM_ADMIN_IDS` | اختیاری | شناسه‌های چت مجاز برای دستورهای بات، جدا با کاما |
 
 ## ۵) گیت‌هاب — Environment و سکرت‌ها
 

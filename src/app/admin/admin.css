@@ -22,3 +22,11 @@
 .picker-url-input{display:block;width:100%;margin-top:9px;border:1px solid #dfe4d9;border-radius:9px;background:white;padding:11px 13px;outline:0;color:#263c32;font-size:13px}
 .picker-url-input:focus{border-color:#709773}
 @media(max-width:650px){.image-picker{flex-direction:column;align-items:stretch}.picker-preview,.picker-empty{width:100%;height:150px}}
+
+.admin-telegram{background:#fffefa;border:1px solid #e9e8df;border-radius:12px;padding:16px 20px;margin:-14px 0 26px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+.tg-info{display:flex;flex-direction:column;gap:3px}
+.tg-info strong{font-size:14px;color:#315643}
+.tg-info span{font-size:11px;color:#9aa399}
+.tg-actions{display:flex;gap:8px}
+.tg-message{width:100%;font-size:11px;color:#4e6e56;background:#edf3ea;border-radius:8px;padding:9px 12px;word-break:break-word}
+@media(max-width:650px){.admin-telegram{flex-direction:column;align-items:stretch}.tg-actions{justify-content:stretch}.tg-actions .admin-action{flex:1}}
