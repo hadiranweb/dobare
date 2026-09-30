@@ -27,13 +27,13 @@ export default function AdminPage() {
   const [showUrlInput, setShowUrlInput] = useState(false);
   const [tgMessage, setTgMessage] = useState("");
   const load = useCallback(async () => {
-    const res = await fetch("/api/admin/data", { cache: "no-store" });
+    const res = await fetch(`/api/admin/data?t=${Date.now()}`, { cache: "no-store" });
     if (res.ok) { const data = await res.json(); setProducts(data.products); setInquiries(data.inquiries); setReserveHours(typeof data.reservationHours === "number" ? data.reservationHours : 6); setLoggedIn(true); }
     else { setLoggedIn(false); if (res.status === 500) setMessage("ورود درست بود، ولی پنل نمی‌تواند به دیتابیس وصل شود. متغیر DATABASE_URL را در تنظیمات برنامه (کنسول لیارا) بررسی کنید."); }
   }, []);
   useEffect(() => {
     const controller = new AbortController();
-    fetch("/api/admin/data", { cache: "no-store", signal: controller.signal })
+    fetch(`/api/admin/data?t=${Date.now()}`, { cache: "no-store", signal: controller.signal })
       .then(async res => {
         if (!res.ok) throw new Error(String(res.status));
         const data = await res.json();

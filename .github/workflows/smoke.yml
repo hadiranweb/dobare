@@ -21,7 +21,7 @@ jobs:
           set -euo pipefail
           code=000
           for i in 1 2 3 4 5; do
-            code=$(curl -s -o /tmp/h.json -w '%{http_code}' --max-time 20 "$SITE_URL/api/health" || echo 000)
+            code=$(curl -s -o /tmp/h.json -w '%{http_code}' --max-time 20 "$SITE_URL/api/health?t=$GITHUB_RUN_ID" || echo 000)
             [ "$code" = "200" ] && break
             echo "تلاش $i: $code"
             sleep 8
@@ -34,14 +34,14 @@ jobs:
       - name: Storefront (200)
         run: |
           set -euo pipefail
-          code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "$SITE_URL/" || echo 000)
+          code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "$SITE_URL/?t=$GITHUB_RUN_ID" || echo 000)
           echo "storefront: $code"
           test "$code" = "200"
 
       - name: Admin page responds (200)
         run: |
           set -euo pipefail
-          code=$(curl -s -o /tmp/adm.html -w '%{http_code}' --max-time 20 "$SITE_URL/admin" || echo 000)
+          code=$(curl -s -o /tmp/adm.html -w '%{http_code}' --max-time 20 "$SITE_URL/admin?t=$GITHUB_RUN_ID" || echo 000)
           echo "admin page: $code"
           test "$code" = "200"
           grep -q 'بارگذاری' /tmp/adm.html || grep -q 'رمز' /tmp/adm.html
@@ -49,7 +49,7 @@ jobs:
       - name: Admin data without cookie (expect 401)
         run: |
           set -euo pipefail
-          code=$(curl -s -o /tmp/d.json -w '%{http_code}' --max-time 20 "$SITE_URL/api/admin/data" || echo 000)
+          code=$(curl -s -o /tmp/d.json -w '%{http_code}' --max-time 20 "$SITE_URL/api/admin/data?t=$GITHUB_RUN_ID" || echo 000)
           echo "admin data (بدون کوکی): $code"
           cat /tmp/d.json; echo
           test "$code" = "401"
@@ -57,7 +57,7 @@ jobs:
       - name: Uploads route alive (expect plain 404, not 500)
         run: |
           set -euo pipefail
-          code=$(curl -s -o /tmp/u.txt -w '%{http_code}' --max-time 20 "$SITE_URL/uploads/z-smoke-test.webp" || echo 000)
+          code=$(curl -s -o /tmp/u.txt -w '%{http_code}' --max-time 20 "$SITE_URL/uploads/z-smoke-test.webp?t=$GITHUB_RUN_ID" || echo 000)
           echo "uploads route: $code"
           cat /tmp/u.txt; echo
           test "$code" = "404"
@@ -76,7 +76,7 @@ jobs:
         if: env.SMOKE_ADMIN_PASSWORD != ''
         run: |
           set -euo pipefail
-          code=$(curl -s -b /tmp/ck.txt -o /tmp/data.json -w '%{http_code}' --max-time 20 "$SITE_URL/api/admin/data" || echo 000)
+          code=$(curl -s -b /tmp/ck.txt -o /tmp/data.json -w '%{http_code}' --max-time 20 "$SITE_URL/api/admin/data?t=$GITHUB_RUN_ID" || echo 000)
           echo "data status: $code"
           test "$code" = "200"
           python3 -c "import json; d=json.load(open('/tmp/data.json')); print('products:', len(d.get('products',[])), '| inquiries:', len(d.get('inquiries',[])), '| reservationHours:', d.get('reservationHours'))"
