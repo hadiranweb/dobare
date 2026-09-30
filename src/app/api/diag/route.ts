@@ -1,4 +1,4 @@
-import { existsSync } from "node:fs";
+import { existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
 export const dynamic = "force-dynamic";
@@ -15,16 +15,16 @@ export async function GET() {
     const sharp = (await import("sharp")).default;
     out.sharp = `ok (vips ${sharp.versions.vips})`;
   } catch (error) {
-    out.sharp = `FAIL: ${error instanceof Error ? error.message.split("\n")[0].slice(0, 200) : "unknown"}`;
+    out.sharp = `FAIL: ${error instanceof Error ? error.message.slice(0, 600) : "unknown"}`;
   }
 
   const checks: Record<string, string> = {
-    "پروژه ریشه (next start)": ".next/server/app/api/admin/data/route.js",
-    "standalone": ".next/standalone/server.js",
-    "standalone/data-route": ".next/standalone/.next/server/app/api/admin/data/route.js",
+    "next-server-route": ".next/server/app/api/admin/data/route.js",
     "node_modules/sharp": "node_modules/sharp/package.json",
     "node_modules/@img": "node_modules/@img/sharp-linux-x64/package.json",
-    "src route": "src/app/api/admin/data/route.ts",
+    "sharp-wasm32": "node_modules/@img/sharp-wasm32/package.json",
+    "native-.node": "node_modules/@img/sharp-linux-x64/lib/sharp-linux-x64-0.35.5.node",
+    "libvips-.so": "node_modules/@img/sharp-libvips-linux-x64/lib/libvips-cpp.so.8.18.7",
     "public": "public/hero.webp",
   };
   const files: Record<string, boolean> = {};
@@ -32,6 +32,7 @@ export async function GET() {
     try { files[label] = existsSync(join(process.cwd(), rel)); } catch { files[label] = false; }
   }
   out.files = files;
+  try { out.imgPackages = readdirSync("node_modules/@img"); } catch { out.imgPackages = "missing"; }
   out.envKeysWithLiara = Object.keys(process.env).filter(k => k.toUpperCase().includes("LIARA"));
   return Response.json(out);
 }

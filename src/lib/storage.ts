@@ -1,7 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { mkdir, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
-import sharp from "sharp";
 
 // پیشوند آدرس عمومی عکس‌ها و پوشه‌ی ذخیره‌ی آن‌ها (در داکر با UPLOAD_DIR روی volume اشاره می‌کند)
 export const UPLOAD_URL_PREFIX = "/uploads/";
@@ -21,8 +20,24 @@ export function isLocalImageUrl(url: string): boolean {
   return Boolean(localPathFromUrl(url));
 }
 
+// ── لود تنبل sharp ─────────────────────────────────────────────
+// sharp نباید در سطح import ماژول لود شود: روی هر پلتفرمی که باینری بومی‌اش
+// در دسترس نباشد (CPU قدیمی/حذف باینری)، کل روت‌هایی که به این فایل دست دارند
+// از کار نمی‌افتند — فقط عملیات واقعی پردازش عکس به آن نیاز دارد.
+// نسخه‌ی WebAssembly (بدون نیاز به باینری بومی) به‌عنوان fallback نصب شده است.
+type SharpModule = typeof import("sharp")["default"];
+let sharpCache: Promise<SharpModule> | null = null;
+
+function getSharp(): Promise<SharpModule> {
+  if (!sharpCache) {
+    sharpCache = import("sharp").then(mod => mod.default);
+  }
+  return sharpCache;
+}
+
 // ذخیره‌ی عکس: چرخش خودکار بر اساس EXIF، فشرده‌سازی به WebP و ساخت نسخه‌ی کوچک
 export async function saveUpload(file: File): Promise<{ image: string; thumb: string; bytes: number }> {
+  const sharp = await getSharp();
   const buffer = Buffer.from(await file.arrayBuffer());
   if (buffer.length === 0) throw new Error("فایل خالی است.");
   const dir = storageDir();
