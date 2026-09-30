@@ -5,5 +5,11 @@
   "next": {
     "mirror": false,
     "nodeVersion": "22"
-  }
+  },
+  "disks": [
+    {
+      "name": "uploads",
+      "mountTo": "/app/data/uploads"
+    }
+  ]
 }
