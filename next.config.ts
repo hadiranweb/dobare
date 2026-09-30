@@ -5,9 +5,14 @@ const nextConfig: NextConfig = {
   output: "standalone",
   // pg ماژول بومی/CJS است و نباید باندل شود
   serverExternalPackages: ["pg", "sharp"],
-  // اسکریپت مایگریشن و فایل‌های SQL باید در خروجی standalone حاضر باشند
+  // اسکریپت مایگریشن، فایل‌های SQL و باینری‌های بومی sharp باید در خروجی standalone حاضر باشند
   outputFileTracingIncludes: {
-    "/**": ["./scripts/apply-migrations.mjs", "./src/db/migrations/**"],
+    "/**": [
+      "./scripts/apply-migrations.mjs",
+      "./src/db/migrations/**",
+      "./node_modules/sharp/**/*",
+      "./node_modules/@img/**/*",
+    ],
   },
 };
 
