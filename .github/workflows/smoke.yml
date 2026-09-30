@@ -1,0 +1,65 @@
+# دود-تست سایت زنده — اجرای دستی از تب Actions (دکمه Run workflow)
+name: Smoke test
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    name: دود-تست سایت زنده
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      SITE_URL: https://dobare.liara.run
+      SMOKE_ADMIN_PASSWORD: ${{ secrets.SMOKE_ADMIN_PASSWORD }}
+    steps:
+      - name: Health (200 + ok)
+        run: |
+          set -euo pipefail
+          code=000
+          for i in 1 2 3 4 5; do
+            code=$(curl -s -o /tmp/h.json -w '%{http_code}' --max-time 20 "$SITE_URL/api/health" || echo 000)
+            [ "$code" = "200" ] && break
+            echo "تلاش $i: $code"
+            sleep 8
+          done
+          echo "health status: $code"
+          cat /tmp/h.json; echo
+          test "$code" = "200"
+          grep -q '"ok"' /tmp/h.json
+
+      - name: Storefront (200)
+        run: |
+          set -euo pipefail
+          code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "$SITE_URL/" || echo 000)
+          echo "storefront: $code"
+          test "$code" = "200"
+
+      - name: Admin page has login form (200)
+        run: |
+          set -euo pipefail
+          code=$(curl -s -o /tmp/adm.html -w '%{http_code}' --max-time 20 "$SITE_URL/admin" || echo 000)
+          echo "admin page: $code"
+          test "$code" = "200"
+          grep -q 'رمز مدیریت' /tmp/adm.html
+
+      - name: Admin login with password (expect 200)
+        if: env.SMOKE_ADMIN_PASSWORD != ''
+        run: |
+          set -euo pipefail
+          code=$(curl -s -c /tmp/ck.txt -o /tmp/login.json -w '%{http_code}' --max-time 20 -X POST "$SITE_URL/api/admin/login" -H 'Content-Type: application/json' --data "{\"password\":\"$SMOKE_ADMIN_PASSWORD\"}" || echo 000)
+          echo "login status: $code"
+          cat /tmp/login.json; echo
+          test "$code" = "200"
+
+      - name: Admin dashboard data (expect 200)
+        if: env.SMOKE_ADMIN_PASSWORD != ''
+        run: |
+          set -euo pipefail
+          code=$(curl -s -b /tmp/ck.txt -o /tmp/data.json -w '%{http_code}' --max-time 20 "$SITE_URL/api/admin/data" || echo 000)
+          echo "data status: $code"
+          test "$code" = "200"
+          python3 -c "import json; d=json.load(open('/tmp/data.json')); print('products:', len(d.get('products',[])), '| inquiries:', len(d.get('inquiries',[])), '| reservationHours:', d.get('reservationHours'))"
