@@ -29,20 +29,20 @@ export default function AdminPage() {
   const load = useCallback(async () => {
     const res = await fetch("/api/admin/data", { cache: "no-store" });
     if (res.ok) { const data = await res.json(); setProducts(data.products); setInquiries(data.inquiries); setReserveHours(typeof data.reservationHours === "number" ? data.reservationHours : 6); setLoggedIn(true); }
-    else setLoggedIn(false);
+    else { setLoggedIn(false); if (res.status === 500) setMessage("ورود درست بود، ولی پنل نمی‌تواند به دیتابیس وصل شود. متغیر DATABASE_URL را در تنظیمات برنامه (کنسول لیارا) بررسی کنید."); }
   }, []);
   useEffect(() => {
     const controller = new AbortController();
     fetch("/api/admin/data", { cache: "no-store", signal: controller.signal })
       .then(async res => {
-        if (!res.ok) throw new Error("unauthorized");
+        if (!res.ok) throw new Error(String(res.status));
         const data = await res.json();
         setProducts(data.products);
         setInquiries(data.inquiries);
         setReserveHours(typeof data.reservationHours === "number" ? data.reservationHours : 6);
         setLoggedIn(true);
       })
-      .catch(() => { if (!controller.signal.aborted) setLoggedIn(false); });
+      .catch((error: unknown) => { if (controller.signal.aborted) return; setLoggedIn(false); if (error instanceof Error && error.message === "500") setMessage("ورود درست بود، ولی پنل نمی‌تواند به دیتابیس وصل شود. متغیر DATABASE_URL را در تنظیمات برنامه (کنسول لیارا) بررسی کنید."); });
     return () => controller.abort();
   }, []);
   useEffect(() => { const t = setInterval(() => setNow(Date.now()), 60000); return () => clearInterval(t); }, []);
