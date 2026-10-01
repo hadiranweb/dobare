@@ -1,20 +1,22 @@
-# چیزهایی که وارد ایمیج داکر نمی‌شوند
-node_modules
-.next
-out
-build
-dist
+# چیزهایی که وارد ایمیج داکر (VPS) نمی‌شوند — همه‌ی الگوها ریشه‌ای‌اند
+# تا به پوشه‌های هم‌نام داخل سورس (مثل src/app/api/admin/data) نمی‌خورند
+/node_modules
+/.next
+/out
+/build
+/dist
 
 # داده‌های زمان اجرا و بکاپ‌ها (روی volume هستند، نه داخل ایمیج)
-data
-backups
+/data
+/backups
 
 # اسرار — هرگز داخل ایمیج نروند
-.env
-.env.*
-!.env.example
+/.env
+/.env.*
+!/.env.example
 
 # ابزارهای توسعه
-.git
-.gitignore
+/.git
+/.github
+/.gitignore
 *.md
