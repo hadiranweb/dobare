@@ -5,7 +5,10 @@ export function telegramToken() {
   return process.env.TELEGRAM_BOT_TOKEN || "";
 }
 
-export type TelegramResponse = { ok?: boolean; result?: unknown; description?: string } | null;
+export type TelegramResponse = { ok?: boolean; result?: unknown; description?: string; error_code?: number } | null;
+
+// نشانگر خطای شبکه: سرور به تلگرام دسترسی ندارد (مسدودی دیتاسنتر ایران و...)
+export const TELEGRAM_NETWORK_ERROR = "NETWORK";
 
 export async function telegramCall(method: string, payload: Record<string, unknown>): Promise<TelegramResponse> {
   const token = telegramToken();
@@ -20,7 +23,7 @@ export async function telegramCall(method: string, payload: Record<string, unkno
     return (await res.json().catch(() => null)) as TelegramResponse;
   } catch (error) {
     console.error(`Telegram ${method} failed:`, error);
-    return null;
+    return { ok: false, description: TELEGRAM_NETWORK_ERROR };
   }
 }
 
