@@ -3,6 +3,20 @@ import { TELEGRAM_NETWORK_ERROR, telegramCall, telegramToken } from "@/lib/teleg
 
 export const dynamic = "force-dynamic";
 
+// آدرس عمومی سایت برای وب‌هوک — پشت پروکسی لیارا ممکن است request.url آدرس داخلی باشد
+// (مثل http://dobare:3000) که تلگرام نمی‌تواند resolve کند؛ اولویت: env → هدرهای عمومی → دامنه‌ی اصلی
+function publicOrigin(request: Request): string {
+  const fromEnv = (process.env.SITE_URL || process.env.NEXT_PUBLIC_SITE_URL || "").trim();
+  if (fromEnv) return fromEnv.replace(/\/+$/, "");
+  const h = (request.headers.get("x-forwarded-host") || request.headers.get("host") || "")
+    .split(",")[0].trim().toLowerCase();
+  if (/^[a-z0-9-]+(\.[a-z0-9-]+)+$/.test(h) && !h.startsWith("localhost") && !h.startsWith("127.")) {
+    const proto = (request.headers.get("x-forwarded-proto") || "https").split(",")[0].trim();
+    return `${proto}://${h}`;
+  }
+  return "https://dobare.liara.run";
+}
+
 // مدیریت وب‌هوک بات تلگرام از پنل — set / delete / info
 export async function POST(request: Request) {
   if (!isAdmin(request)) return Response.json({ error: "دسترسی مجاز نیست." }, { status: 401 });
@@ -31,11 +45,11 @@ export async function POST(request: Request) {
     const bot = ((me.result as { username?: string })?.username) || "";
 
     // ۲) ثبت وب‌هوک
-    const origin = String(body.url || process.env.NEXT_PUBLIC_SITE_URL || new URL(request.url).origin).replace(/\/+$/, "");
+    const origin = String(body.url || publicOrigin(request)).replace(/\/+$/, "");
     const url = `${origin}/api/telegram/webhook`;
     const res = await telegramCall("setWebhook", { url, secret_token: secret, allowed_updates: ["message", "callback_query"] });
     if (!res?.ok) {
-      return Response.json({ error: `اتصال نشد: ${res?.description || "خطای نامشخص"}` }, { status: 502 });
+      return Response.json({ error: `اتصال نشد: ${res?.description || "خطای نامشخص"} (وب‌هوک: ${url})` }, { status: 502 });
     }
 
     // ۳) پیام تست به چت اعلان‌ها
