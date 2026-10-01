@@ -13,8 +13,7 @@ export const metadata: Metadata = {
   manifest: "/manifest.webmanifest",
   icons: {
     icon: [
-      { url: "/brand/logo-monochrome-light.svg", type: "image/svg+xml", media: "(prefers-color-scheme: light)" },
-      { url: "/brand/logo-monochrome-dark.svg", type: "image/svg+xml", media: "(prefers-color-scheme: dark)" },
+      { url: "/brand/logo-monochrome-light.svg", type: "image/svg+xml" },
       { url: "/brand/icon-192.png", type: "image/png", sizes: "192x192" },
     ],
     shortcut: "/brand/logo-monochrome-light.svg",
@@ -37,11 +36,8 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  colorScheme: "light dark",
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#faf8f2" },
-    { media: "(prefers-color-scheme: dark)", color: "#080b14" },
-  ],
+  colorScheme: "light",
+  themeColor: "#faf8f2",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
