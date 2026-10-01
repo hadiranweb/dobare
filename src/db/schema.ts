@@ -5,13 +5,24 @@ export const products = pgTable("products", {
   title: text("title").notNull(),
   description: text("description").notNull(),
   price: integer("price").notNull(),
-  imageUrl: text("image_url").notNull(),
+  imageUrl: text("image_url").notNull(), // کاور = عکس اول
   thumbUrl: text("thumb_url"),
   category: text("category").notNull().default("متفرقه"),
   condition: text("condition").notNull().default("تمیز و سالم"),
   available: boolean("available").notNull().default(true),
   reservedAt: timestamp("reserved_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+// عکس‌های هر کالا (تا ۱۰ عکس) — position صفر = کاور
+export const productImages = pgTable("product_images", {
+  id: serial("id").primaryKey(),
+  productId: integer("product_id")
+    .notNull()
+    .references(() => products.id, { onDelete: "cascade" }),
+  imageUrl: text("image_url").notNull(),
+  thumbUrl: text("thumb_url"),
+  position: integer("position").notNull().default(0),
 });
 
 export const inquiries = pgTable("inquiries", {

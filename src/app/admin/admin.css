@@ -30,3 +30,18 @@
 .tg-actions{display:flex;gap:8px}
 .tg-message{width:100%;font-size:11px;color:#4e6e56;background:#edf3ea;border-radius:8px;padding:9px 12px;word-break:break-word}
 @media(max-width:650px){.admin-telegram{flex-direction:column;align-items:stretch}.tg-actions{justify-content:stretch}.tg-actions .admin-action{flex:1}}
+
+/* ── انتخاب چند عکس (تا ۱۰) ── */
+.image-count-tag{font-size:10px;color:#8a9187;background:#f0f2ea;border-radius:99px;padding:2px 9px;margin-right:6px;font-weight:700}
+.picker-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:9px;margin:10px 0 12px}
+.picker-thumb{position:relative;border-radius:11px;overflow:hidden;border:2px solid transparent;background:#f0f0ea;aspect-ratio:1}
+.picker-thumb.cover{border-color:#2f5542}
+.picker-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.cover-tag{position:absolute;top:5px;right:5px;background:#2f5542;color:#fff;font-size:9px;font-weight:800;border-radius:99px;padding:2px 7px}
+.picker-thumb-actions{position:absolute;bottom:0;left:0;right:0;display:flex;justify-content:center;gap:4px;background:#15291dd6;padding:3px 0}
+.picker-thumb-actions button{border:0;background:#ffffffd9;color:#31432f;width:22px;height:20px;border-radius:6px;display:grid;place-items:center;padding:0}
+.picker-thumb-actions button:hover:not(:disabled){background:#fff}
+.picker-thumb-actions button:disabled{opacity:.3;cursor:default}
+.picker-url-row{display:flex;gap:8px;margin-top:9px}
+.picker-url-row .picker-url-input{flex:1}
+@media(max-width:520px){.picker-grid{grid-template-columns:repeat(4,1fr)}}

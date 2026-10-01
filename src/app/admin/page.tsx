@@ -2,13 +2,15 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Check, LogOut, Plus, Trash2, X } from "lucide-react";
+import { ArrowRight, Check, ChevronLeft, ChevronRight, LogOut, Plus, Trash2, X } from "lucide-react";
 import "./admin.css";
 
-type Product = { id: number; title: string; description: string; price: number; imageUrl: string; thumbUrl: string | null; category: string; condition: string; available: boolean; reservedAt: string | null };
+type ProductImage = { imageUrl: string; thumbUrl: string | null };
+type Product = { id: number; title: string; description: string; price: number; imageUrl: string; thumbUrl: string | null; images: ProductImage[]; category: string; condition: string; available: boolean; reservedAt: string | null };
 type Inquiry = { id: number; productTitle: string; phone: string; name: string | null; message: string | null; createdAt: string };
-type Form = Omit<Product, "id" | "reservedAt" | "thumbUrl"> & { thumbUrl: string };
-const blank: Form = { title: "", description: "", price: 0, imageUrl: "", thumbUrl: "", category: "خانه و دکور", condition: "تمیز و سالم", available: true };
+type Form = { title: string; description: string; price: number; category: string; condition: string; available: boolean; images: { imageUrl: string; thumbUrl: string }[] };
+const MAX_IMAGES = 10;
+const blank: Form = { title: "", description: "", price: 0, images: [], category: "خانه و دکور", condition: "تمیز و سالم", available: true };
 
 export default function AdminPage() {
   const [password, setPassword] = useState("");
@@ -25,6 +27,7 @@ export default function AdminPage() {
   const [now, setNow] = useState(() => Date.now());
   const [uploading, setUploading] = useState(false);
   const [showUrlInput, setShowUrlInput] = useState(false);
+  const [urlDraft, setUrlDraft] = useState("");
   const [tgMessage, setTgMessage] = useState("");
   const load = useCallback(async () => {
     const res = await fetch(`/api/admin/data?t=${Date.now()}`, { cache: "no-store" });
@@ -85,26 +88,49 @@ export default function AdminPage() {
     } catch { setTgMessage("ارتباط برقرار نشد."); }
   };
   const pickFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+    const files = Array.from(e.target.files || []);
     e.target.value = "";
-    if (!file) return;
-    setUploading(true); setMessage("");
+    if (files.length === 0) return;
+    const room = MAX_IMAGES - form.images.length;
+    if (room <= 0) { setMessage(`حداکثر ${MAX_IMAGES.toLocaleString("fa-IR")} عکس برای هر وسیله مجاز است.`); return; }
+    const chosen = files.slice(0, room);
+    setMessage(files.length > room ? `فقط ${room.toLocaleString("fa-IR")} عکس اضافه شد (سقف ${MAX_IMAGES.toLocaleString("fa-IR")} عکس).` : "");
+    setUploading(true);
     try {
-      const fd = new FormData(); fd.append("file", file);
-      const res = await fetch("/api/admin/upload", { method: "POST", body: fd });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "آپلود نشد.");
-      setForm(f => ({ ...f, imageUrl: data.image, thumbUrl: data.thumb }));
+      const uploaded: { imageUrl: string; thumbUrl: string }[] = [];
+      for (const file of chosen) {
+        const fd = new FormData(); fd.append("file", file);
+        const res = await fetch("/api/admin/upload", { method: "POST", body: fd });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "آپلود نشد.");
+        uploaded.push({ imageUrl: data.image, thumbUrl: data.thumb || "" });
+      }
+      setForm(f => ({ ...f, images: [...f.images, ...uploaded] }));
       setShowUrlInput(false);
     } catch (err) { setMessage(err instanceof Error ? err.message : "آپلود نشد."); }
     finally { setUploading(false); }
   };
-  const edit = (p: Product) => { setForm({ title: p.title, description: p.description, price: p.price, imageUrl: p.imageUrl, thumbUrl: p.thumbUrl || "", category: p.category, condition: p.condition, available: p.available }); setEditing(p.id); setFormOpen(true); setMessage(""); };
+  const removeImage = (index: number) => setForm(f => ({ ...f, images: f.images.filter((_, i) => i !== index) }));
+  const moveImage = (index: number, dir: -1 | 1) => setForm(f => {
+    const j = index + dir;
+    if (j < 0 || j >= f.images.length) return f;
+    const images = [...f.images];
+    [images[index], images[j]] = [images[j], images[index]];
+    return { ...f, images };
+  });
+  const addUrlImage = () => {
+    const url = urlDraft.trim();
+    if (!/^https?:\/\//.test(url)) { setMessage("پیوند عکس باید با http یا https شروع شود."); return; }
+    if (form.images.length >= MAX_IMAGES) { setMessage(`حداکثر ${MAX_IMAGES.toLocaleString("fa-IR")} عکس مجاز است.`); return; }
+    setForm(f => ({ ...f, images: [...f.images, { imageUrl: url, thumbUrl: "" }] }));
+    setUrlDraft(""); setShowUrlInput(false); setMessage("");
+  };
+  const edit = (p: Product) => { setForm({ title: p.title, description: p.description, price: p.price, images: (p.images?.length ? p.images : [{ imageUrl: p.imageUrl, thumbUrl: p.thumbUrl }]).map(i => ({ imageUrl: i.imageUrl, thumbUrl: i.thumbUrl || "" })), category: p.category, condition: p.condition, available: p.available }); setEditing(p.id); setFormOpen(true); setMessage(""); };
   const add = () => { setForm(blank); setEditing(null); setFormOpen(true); setMessage(""); };
 
   return <main className="admin-page"><div className="admin-container"><div className="admin-top"><Link href="/" className="admin-logo">↻ دوباره<span>.</span> <small>مدیریت</small></Link><Link href="/" className="admin-back"><ArrowRight size={16} /> برگشت به ویترین</Link></div>
     {loggedIn === null ? <div className="admin-login">در حال بارگذاری...</div> : !loggedIn ? <div className="admin-login"><div className="admin-lock">✳</div><h1>سلام، صاحبِ دوباره!</h1><p>برای مدیریت وسایل و دیدن درخواست‌ها، رمزت رو وارد کن.</p><form onSubmit={login}><label>رمز مدیریت</label><input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="رمز عبور" required /><button disabled={busy} className="admin-main-button">{busy ? "یک لحظه..." : "ورود به مدیریت"} <ArrowRight size={18} /></button></form>{message && <div className="admin-message error">{message}</div>}</div> : <div className="admin-dashboard"><div className="admin-heading"><div><div className="section-kicker">گوشه‌ی مخصوص صاحب‌خونه</div><h1>مدیریت دوباره</h1><p>وسایل و درخواست‌ها، همه همین‌جا دم دستت هستن.</p></div><button className="admin-logout" onClick={logout}><LogOut size={17} /> خروج</button></div><div className="admin-stats"><div><strong>{products.length.toLocaleString("fa-IR")}</strong><span>کل وسایل</span></div><div><strong>{products.filter(p => p.available).length.toLocaleString("fa-IR")}</strong><span>وسایل موجود</span></div><div><strong>{inquiries.length.toLocaleString("fa-IR")}</strong><span>درخواست تماس</span></div></div><div className="admin-telegram"><div className="tg-info"><strong>🤖 بات تلگرام</strong><span>مدیریت با پیام و دکمه — بعد از تنظیم متغیرها در لیارا، «اتصال بات» را بزنید</span></div><div className="tg-actions"><button className="admin-action" onClick={() => tgAction("set")}>اتصال بات</button><button className="admin-action" onClick={() => tgAction("info")}>وضعیت</button><button className="admin-action warn" onClick={() => tgAction("delete")}>قطع اتصال</button></div>{tgMessage && <div className="tg-message">{tgMessage}</div>}</div><div className="admin-toolbar"><div className="admin-tabs"><button className={tab === "products" ? "selected" : ""} onClick={() => setTab("products")}>وسایل من</button><button className={tab === "inquiries" ? "selected" : ""} onClick={() => setTab("inquiries")}>درخواست‌ها <span>{inquiries.length.toLocaleString("fa-IR")}</span></button></div>{tab === "products" && <button className="admin-main-button add-button" onClick={add}><Plus size={18} /> افزودن وسیله</button>}</div>{message && !formOpen && <div className="admin-message">{message}</div>}
     {tab === "products" ? <div className="admin-list">{products.map(p => <div className="admin-item" key={p.id}><img src={p.imageUrl} alt={p.title} /><div className="admin-item-detail"><strong>{p.title}</strong><span>{p.category} · {p.price.toLocaleString("fa-IR")} تومان</span></div><span className={p.available ? "admin-status available" : p.reservedAt ? "admin-status reserved" : "admin-status sold"}>{p.available ? "موجود" : p.reservedAt ? `رزرو ⏳ ${remainingLabel(p.reservedAt)}` : "واگذار شده"}</span><div className="admin-item-actions">{p.available ? <button className="admin-action warn" onClick={() => setStatus(p.id, "sell")}>فروخته شد</button> : p.reservedAt ? <><button className="admin-action" onClick={() => setStatus(p.id, "open")}>آزاد کن</button><button className="admin-action warn" onClick={() => setStatus(p.id, "sell")}>فروخته شد</button></> : <button className="admin-action" onClick={() => setStatus(p.id, "open")}>بازگردانی</button>}</div><button className="admin-edit" onClick={() => edit(p)}>ویرایش</button><button className="admin-delete" aria-label={`حذف ${p.title}`} onClick={() => remove(p.id)}><Trash2 size={17} /></button></div>)}{products.length === 0 && <div className="admin-empty">هنوز وسیله‌ای ثبت نشده. اولین وسیله رو اضافه کن!</div>}</div> : <div className="admin-list">{inquiries.map(i => <div className="admin-inquiry" key={i.id}><div className="inquiry-icon">☎</div><div><strong>{i.productTitle}</strong>{i.name && <span className="inquiry-name">{i.name}</span>}{i.message && <span className="inquiry-message">{i.message}</span>}<span>{new Date(i.createdAt).toLocaleString("fa-IR")}</span></div><a href={`tel:${i.phone}`} dir="ltr">{i.phone} ☎</a></div>)}{inquiries.length === 0 && <div className="admin-empty">هنوز کسی شماره‌ای ثبت نکرده.</div>}</div>}</div>}
   </div>
-  {formOpen && <div className="modal-backdrop" onMouseDown={e => { if (e.target === e.currentTarget) setFormOpen(false); }}><div className="admin-form-modal"><button className="modal-close" onClick={() => setFormOpen(false)} aria-label="بستن"><X size={20} /></button><h2>{editing ? "ویرایش وسیله" : "یه وسیله‌ی تازه"}</h2><p>مشخصات وسیله رو اینجا بنویس تا توی ویترین دیده بشه.</p><form onSubmit={save}><label>نام وسیله<input required value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="مثلاً صندلی چوبی" /></label><div className="image-field"><label>عکس وسیله</label><div className="image-picker">{form.imageUrl ? <img src={form.imageUrl} alt="پیش‌نمایش عکس وسیله" className="picker-preview" /> : <div className="picker-empty">عکسی انتخاب نشده</div>}<div className="picker-actions"><label className={uploading ? "admin-action upload-btn busy" : "admin-action upload-btn"}>{uploading ? "در حال پردازش..." : "انتخاب عکس از دستگاه"}<input type="file" hidden accept="image/jpeg,image/png,image/webp,image/avif" onChange={pickFile} disabled={uploading} /></label><button type="button" className="picker-toggle" onClick={() => setShowUrlInput(v => !v)}>{showUrlInput ? "بستن لینک" : "یا پیوند عکس"}</button></div><span className="picker-hint">عکس‌ها خودکار بهینه و فشرده می‌شوند (حداکثر ۸ مگابایت)</span></div>{showUrlInput && <input className="picker-url-input" type="url" dir="ltr" value={form.imageUrl} onChange={e => setForm({ ...form, imageUrl: e.target.value })} placeholder="https://example.com/photo.jpg" />}</div><div className="admin-form-row"><label>قیمت (تومان)<input required type="number" min="0" value={form.price} onChange={e => setForm({ ...form, price: Number(e.target.value) })} /></label><label>دسته‌بندی<input required value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} placeholder="خانه و دکور" /></label></div><label>وضعیت وسیله<input value={form.condition} onChange={e => setForm({ ...form, condition: e.target.value })} placeholder="تمیز و سالم" /></label><label>توضیح کوتاه<textarea required rows={3} value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="یه چند خط خودمونی درباره‌ی این وسیله..." /></label><label className="admin-checkbox"><input type="checkbox" checked={form.available} onChange={e => setForm({ ...form, available: e.target.checked })} /> این وسیله موجود است</label>{message && <div className="admin-message error">{message}</div>}<button disabled={busy} className="admin-main-button admin-save">{busy ? "در حال ذخیره..." : "ذخیره وسیله"} <Check size={18} /></button></form></div></div>}</main>;
+  {formOpen && <div className="modal-backdrop" onMouseDown={e => { if (e.target === e.currentTarget) setFormOpen(false); }}><div className="admin-form-modal"><button className="modal-close" onClick={() => setFormOpen(false)} aria-label="بستن"><X size={20} /></button><h2>{editing ? "ویرایش وسیله" : "یه وسیله‌ی تازه"}</h2><p>مشخصات وسیله رو اینجا بنویس تا توی ویترین دیده بشه.</p><form onSubmit={save}><label>نام وسیله<input required value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="مثلاً صندلی چوبی" /></label><div className="image-field"><label>عکس‌های وسیله <span className="image-count-tag">{form.images.length.toLocaleString("fa-IR")} از {MAX_IMAGES.toLocaleString("fa-IR")}</span></label><div className="picker-grid">{form.images.map((img, i) => <div className={i === 0 ? "picker-thumb cover" : "picker-thumb"} key={`${img.imageUrl}-${i}`}><img src={img.thumbUrl || img.imageUrl} alt={`عکس ${(i + 1).toLocaleString("fa-IR")} ${form.title}`} />{i === 0 && <span className="cover-tag">کاور</span>}<div className="picker-thumb-actions"><button type="button" aria-label="بردن به عنوان عکس کاور" disabled={i === 0} onClick={() => moveImage(i, -1)}><ChevronRight size={14} /></button><button type="button" aria-label={`حذف عکس ${(i + 1).toLocaleString("fa-IR")}`} onClick={() => removeImage(i)}><X size={13} /></button><button type="button" aria-label="بردن به انتهای فهرست" disabled={i === form.images.length - 1} onClick={() => moveImage(i, 1)}><ChevronLeft size={14} /></button></div></div>)}{form.images.length === 0 && <div className="picker-empty">عکسی انتخاب نشده — حداقل یک عکس لازم است</div>}</div><div className="picker-actions"><label className={uploading || form.images.length >= MAX_IMAGES ? "admin-action upload-btn busy" : "admin-action upload-btn"}>{uploading ? "در حال پردازش..." : form.images.length >= MAX_IMAGES ? "سقف عکس‌ها پر شده" : "افزودن عکس از دستگاه"}<input type="file" hidden multiple accept="image/jpeg,image/png,image/webp,image/avif" onChange={pickFile} disabled={uploading || form.images.length >= MAX_IMAGES} /></label><button type="button" className="picker-toggle" onClick={() => setShowUrlInput(v => !v)}>{showUrlInput ? "بستن لینک" : "یا پیوند عکس"}</button></div><span className="picker-hint">اولین عکس، کاورِ کارت است — با فلش‌ها جابه‌جا کنید · عکس‌ها خودکار بهینه و فشرده می‌شوند (هر کدام حداکثر ۸ مگابایت)</span>{showUrlInput && <div className="picker-url-row"><input className="picker-url-input" type="url" dir="ltr" value={urlDraft} onChange={e => setUrlDraft(e.target.value)} placeholder="https://example.com/photo.jpg" /><button type="button" className="admin-action" onClick={addUrlImage} disabled={form.images.length >= MAX_IMAGES}>افزودن پیوند</button></div>}</div><div className="admin-form-row"><label>قیمت (تومان)<input required type="number" min="0" value={form.price} onChange={e => setForm({ ...form, price: Number(e.target.value) })} /></label><label>دسته‌بندی<input required value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} placeholder="خانه و دکور" /></label></div><label>وضعیت وسیله<input value={form.condition} onChange={e => setForm({ ...form, condition: e.target.value })} placeholder="تمیز و سالم" /></label><label>توضیح کوتاه<textarea required rows={3} value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="یه چند خط خودمونی درباره‌ی این وسیله..." /></label><label className="admin-checkbox"><input type="checkbox" checked={form.available} onChange={e => setForm({ ...form, available: e.target.checked })} /> این وسیله موجود است</label>{message && <div className="admin-message error">{message}</div>}<button disabled={busy} className="admin-main-button admin-save">{busy ? "در حال ذخیره..." : "ذخیره وسیله"} <Check size={18} /></button></form></div></div>}</main>;
 }

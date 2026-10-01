@@ -32,3 +32,38 @@
 .condition-badge.sold{background:#f4f4f0ed;color:#8b918a}
 .condition-badge.sold .badge-dot{background:#b3b8ae}
 .reserve-note{background:#faf6ec;border:1px dashed #ddd0b4;color:#8a7a58;font-size:11.5px;font-weight:600;line-height:1.9;border-radius:10px;padding:10px 14px;margin:-12px 0 22px;text-align:right}
+
+/* ── کارت قابل کلیک و شمارنده‌ی عکس ── */
+.product-card{cursor:pointer;transition:transform .22s ease,box-shadow .22s ease;border-radius:18px}
+.product-card:hover,.product-card:focus-visible{transform:translateY(-4px);box-shadow:0 16px 34px #20322514;outline:none}
+.photo-count{position:absolute;bottom:8px;left:8px;background:#15291dd9;color:#fff;font-size:10px;font-weight:700;padding:4px 8px;border-radius:99px;direction:rtl}
+
+/* ── مودال جزئیات وسیله (پاپ‌آپ کارت) ── */
+.pd-modal{width:min(100%,560px);padding:0}
+.pd-gallery{position:relative;background:#f1f2e9}
+.pd-main-img{width:100%;max-height:52vh;object-fit:cover;aspect-ratio:4/3}
+.pd-nav{position:absolute;top:50%;transform:translateY(-50%);border:0;background:#ffffffe6;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;color:#3c5347;box-shadow:0 4px 14px #10201626;transition:background .15s}
+.pd-nav:hover{background:#fff}
+.pd-prev{right:12px}
+.pd-next{left:12px}
+.pd-counter{position:absolute;bottom:10px;right:12px;background:#15291db3;color:#fff;font-size:10.5px;font-weight:700;padding:4px 10px;border-radius:99px}
+.pd-thumbs{display:flex;gap:8px;padding:12px 18px 0;overflow-x:auto;background:#fffefa}
+.pd-thumb{flex:0 0 58px;height:58px;border-radius:10px;background-size:cover;background-position:center;border:2px solid transparent;padding:0;transition:border-color .15s,opacity .15s;opacity:.75}
+.pd-thumb:hover{opacity:1}
+.pd-thumb.active{border-color:var(--green);opacity:1}
+.pd-info{padding:20px 26px 28px}
+.pd-chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.pd-chip{font-size:10.5px;font-weight:800;color:#5c6f60;background:#f0f2e8;border:1px solid #e2e5d6;border-radius:99px;padding:5px 12px}
+.pd-chip-condition{color:#8a6a3d;background:#faf3e8;border-color:#ecdcc2}
+.pd-info h2{font-size:24px;font-weight:900;margin:0 0 12px}
+.pd-price-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-bottom:14px;border-bottom:1px dashed #e0e0d2;margin-bottom:14px}
+.pd-status{font-size:11.5px;font-weight:800;border-radius:99px;padding:6px 12px}
+.pd-status.available{background:#e9f2e7;color:#426c49}
+.pd-status.reserved{background:#fdf3e8;color:#a26a3d}
+.pd-status.sold{background:#f4f4f0;color:#8b918a}
+.pd-desc{font-size:13.5px;color:#6d766c;line-height:2.2;margin:0 0 20px;white-space:pre-line}
+.pd-cta{width:100%;justify-content:space-between}
+.pd-status-note{background:#f4f4f0;color:#84897f;font-size:12.5px;font-weight:600;line-height:2;border-radius:12px;padding:13px 16px;text-align:center}
+.pd-back{display:inline-flex;align-items:center;gap:5px;border:0;background:none;color:#7d8a7e;font-size:11.5px;font-weight:700;padding:0 0 10px}
+.pd-back:hover{color:var(--green)}
+@media(max-width:680px){.pd-modal{width:100%}.pd-main-img{max-height:38vh}.pd-info{padding:17px 20px 22px}.pd-info h2{font-size:20px}.pd-thumb{flex:0 0 48px;height:48px}}
