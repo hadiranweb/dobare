@@ -1,4 +1,4 @@
-import { boolean, integer, jsonb, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
+import { boolean, doublePrecision, integer, jsonb, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
 
 // مشخصات تکمیلی کالا — قیمت نو (اختیاری) و جدول مشخصات { key, value }
 export type ProductSpec = { key: string; value: string };
@@ -8,6 +8,8 @@ export const products = pgTable("products", {
   title: text("title").notNull(),
   description: text("description").notNull(),
   price: integer("price").notNull(),
+  // نسبت دلاری کالا — قیمت تومانی = نسبت × میانگین دلار هفته (تنظیمات داشبورد)
+  usdRatio: doublePrecision("usd_ratio"),
   // قیمت نو‌ی محصول (اختیاری) — برای نمایش مقایسه‌ای «چند ارزون‌تر از نو» به خریدار
   newPrice: integer("new_price"),
   // جدول مشخصات دلخواه: سطرهای «عنوان/مقدار» مثل رنگ، ابعاد، کارکرد — ترتیب حفظ می‌شود

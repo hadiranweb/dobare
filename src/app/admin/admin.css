@@ -55,3 +55,19 @@
 .spec-remove{border:0;background:#fdeeec;color:#b0552f;width:34px;height:40px;border-radius:9px;display:grid;place-items:center;padding:0;flex:0 0 34px}
 .spec-remove:hover{background:#f9dfd9}
 .spec-add{display:inline-flex;align-items:center;gap:6px;margin-top:2px}
+
+/* ── موتور قیمت ── */
+.admin-rate{background:#fffefa;border:1px solid #e9e8df;border-radius:12px;padding:16px 20px;margin:-14px 0 14px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+.rate-info{display:flex;flex-direction:column;gap:4px}
+.rate-info strong{font-size:14px;color:#315643}
+.rate-info span{font-size:11px;color:#8b978c}
+.rate-form{display:flex;gap:8px;align-items:center}
+.rate-form input{width:150px;height:40px;border:1px solid #d8dfd4;border-radius:9px;padding:0 12px;outline:none;text-align:left;letter-spacing:.5px;font-family:inherit}
+.rate-form input:focus{border-color:#5b8261;box-shadow:0 0 0 3px #5b826123}
+.price-engine-field{margin:2px 0 12px}
+.price-mode-toggle{display:inline-flex;background:#eef0e6;border-radius:10px;padding:3px;gap:3px;margin-bottom:10px}
+.price-mode-toggle button{border:0;background:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:800;color:#7d8a7e;font-family:inherit}
+.price-mode-toggle button.selected{background:#fff;color:#315643;box-shadow:0 2px 6px #20322514}
+.price-live-hint{display:block;font-size:10.5px;color:#628068;margin-top:7px;font-weight:700}
+.price-live-hint.price-warning{color:#a8614f}
+@media(max-width:650px){.admin-rate{align-items:stretch}.rate-form{flex-direction:column;align-items:stretch}.rate-form input{width:100%}.rate-form .admin-main-button{width:100%}.price-mode-toggle{display:flex}.price-mode-toggle button{flex:1}}

@@ -1,6 +1,7 @@
 import { db } from "@/db";
 import { inquiries, productImages, products } from "@/db/schema";
 import { isAdmin } from "@/lib/admin-auth";
+import { getUsdRate } from "@/lib/price-engine";
 import { RESERVATION_HOURS } from "@/lib/reservation";
 import { deleteLocalImages, isLocalImageUrl } from "@/lib/storage";
 import { asc, desc, eq } from "drizzle-orm";
@@ -24,6 +25,7 @@ async function productsWithImages() {
   return items.map(p => ({
     ...p,
     newPrice: p.newPrice ?? null,
+    usdRatio: p.usdRatio ?? null,
     specs: p.specs ?? [],
     images: byProduct.get(p.id)?.length ? byProduct.get(p.id)! : [{ imageUrl: p.imageUrl, thumbUrl: p.thumbUrl }],
   }));
@@ -31,8 +33,8 @@ async function productsWithImages() {
 
 export async function GET(request: Request) {
   if (!isAdmin(request)) return unauthorized();
-  const [items, leads] = await Promise.all([productsWithImages(), db.select().from(inquiries).orderBy(desc(inquiries.createdAt))]);
-  return Response.json({ products: items, inquiries: leads, reservationHours: RESERVATION_HOURS });
+  const [items, leads, usdRate] = await Promise.all([productsWithImages(), db.select().from(inquiries).orderBy(desc(inquiries.createdAt)), getUsdRate()]);
+  return Response.json({ products: items, inquiries: leads, reservationHours: RESERVATION_HOURS, usdRate });
 }
 
 // اعتبارسنجی یک عکس: آپلود محلی (نام تولیدشده توسط خود سیستم) یا لینک خارجی http(s)
@@ -51,13 +53,31 @@ function validateImage(url: string, thumbUrl: string | null) {
   return { imageUrl: url, thumbUrl: null };
 }
 
-function parseProduct(body: Record<string, unknown>) {
+async function parseProduct(body: Record<string, unknown>) {
   const title = String(body.title || "").trim().slice(0, 120);
   const description = String(body.description || "").trim().slice(0, 600);
   const category = String(body.category || "متفرقه").trim().slice(0, 60);
   const condition = String(body.condition || "تمیز و سالم").trim().slice(0, 60);
-  const price = Number(body.price);
-  if (!title || !description || !Number.isInteger(price) || price < 0) throw new Error("نام، توضیح و قیمت معتبر وارد کنید.");
+  if (!title || !description) throw new Error("نام و توضیح معتبر وارد کنید.");
+
+  // ── موتور قیمت: دو حالت — «نسبت دلاری» مستقیم، یا «تومان» (نسبت = قیمت ÷ نرخ دلار) ──
+  const usdRate = await getUsdRate();
+  if (!usdRate) throw new Error("ابتدا میانگین قیمت دلار هفته را در تنظیمات داشبورد ثبت کنید.");
+  const ratioRaw = body.usdRatio;
+  const hasRatio = ratioRaw !== null && ratioRaw !== undefined && String(ratioRaw).trim() !== "";
+  let usdRatio: number;
+  let price: number;
+  if (hasRatio) {
+    const r = Number(ratioRaw);
+    if (!Number.isFinite(r) || r <= 0) throw new Error("نسبت دلاری باید عددی بزرگ‌تر از صفر باشد.");
+    usdRatio = r;
+    price = Math.round(r * usdRate);
+    if (!Number.isSafeInteger(price) || price <= 0 || price > 2_147_483_647) throw new Error("قیمت محاسبه‌شده معتبر نیست.");
+  } else {
+    price = Number(body.price);
+    if (!Number.isInteger(price) || price <= 0 || price > 2_147_483_647) throw new Error("قیمت باید عدد صحیحی بزرگ‌تر از صفر باشد.");
+    usdRatio = price / usdRate;
+  }
 
   // قیمت نو (اختیاری) — فقط برای نمایش مقایسه‌ای به خریدار؛ خالی یعنی ندارد
   let newPrice: number | null = null;
@@ -88,7 +108,7 @@ function parseProduct(body: Record<string, unknown>) {
   const available = body.available !== false;
   // کاور (ستون‌های محصول) همیشه عکس اول است — بقیه‌ی بخش‌های برنامه (کارت‌ها، بات، ...) فقط همین را می‌بینند
   return {
-    values: { title, description, category, condition, newPrice, specs: specs.length ? specs : null, imageUrl: images[0].imageUrl, thumbUrl: images[0].thumbUrl, price, available, ...(available ? { reservedAt: null } : {}) },
+    values: { title, description, category, condition, newPrice, usdRatio, specs: specs.length ? specs : null, imageUrl: images[0].imageUrl, thumbUrl: images[0].thumbUrl, price, available, ...(available ? { reservedAt: null } : {}) },
     images,
   };
 }
@@ -96,7 +116,7 @@ function parseProduct(body: Record<string, unknown>) {
 export async function POST(request: Request) {
   if (!isAdmin(request)) return unauthorized();
   try {
-    const { values, images } = parseProduct(await request.json());
+    const { values, images } = await parseProduct(await request.json());
     const [created] = await db.insert(products).values(values).returning();
     await db.insert(productImages).values(images.map((img, i) => ({ productId: created.id, imageUrl: img.imageUrl, thumbUrl: img.thumbUrl, position: i })));
     return Response.json({ product: created });
@@ -109,7 +129,7 @@ export async function PATCH(request: Request) {
     const body = await request.json();
     const id = Number(body.id);
     if (!Number.isInteger(id) || id < 1) throw new Error("شناسه نامعتبر است.");
-    const { values, images } = parseProduct(body);
+    const { values, images } = await parseProduct(body);
     const [previous] = await db.select().from(products).where(eq(products.id, id)).limit(1);
     const previousImages = await db.select().from(productImages).where(eq(productImages.productId, id));
     const [updated] = await db.update(products).set(values).where(eq(products.id, id)).returning();
