@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800">
+  <defs>
+    
+    <!-- Cyber Indigo / Kinetic Cyan (Master Brand) -->
+    <linearGradient id="cyber-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00F5FF"/>
+      <stop offset="25%" stop-color="#3B82F6"/>
+      <stop offset="60%" stop-color="#6366F1"/>
+      <stop offset="85%" stop-color="#8B5CF6"/>
+      <stop offset="100%" stop-color="#EC4899"/>
+    </linearGradient>
+
+    <!-- Solaris Gold (Luxury Edition) -->
+    <linearGradient id="gold-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FEF08A"/>
+      <stop offset="25%" stop-color="#FCD34D"/>
+      <stop offset="55%" stop-color="#F59E0B"/>
+      <stop offset="85%" stop-color="#D97706"/>
+      <stop offset="100%" stop-color="#92400E"/>
+    </linearGradient>
+
+    <!-- Aurora Emerald (Bio/Kinetic Edition) -->
+    <linearGradient id="emerald-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6EE7B7"/>
+      <stop offset="35%" stop-color="#10B981"/>
+      <stop offset="75%" stop-color="#059669"/>
+      <stop offset="100%" stop-color="#047857"/>
+    </linearGradient>
+
+    <!-- Obsidian Monochrome (Minimal Edition) -->
+    <linearGradient id="mono-dark" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#E2E8F0"/>
+    </linearGradient>
+
+    <linearGradient id="mono-light" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F172A"/>
+      <stop offset="100%" stop-color="#1E293B"/>
+    </linearGradient>
+
+    <!-- Specular Highlight Curve -->
+    <linearGradient id="specular-glow" x1="20%" y1="10%" x2="60%" y2="70%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.65"/>
+      <stop offset="45%" stop-color="#FFFFFF" stop-opacity="0.1"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+
+    <!-- Refined Drop Shadow -->
+    <filter id="master-shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="20" stdDeviation="28" flood-color="#4F46E5" flood-opacity="0.4"/>
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#000000" flood-opacity="0.5"/>
+    </filter>
+    <filter id="gold-shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="20" stdDeviation="28" flood-color="#F59E0B" flood-opacity="0.35"/>
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#000000" flood-opacity="0.5"/>
+    </filter>
+    
+  </defs>
+  <rect width="800" height="800" fill="#080B14" rx="48"/>
+  
+  <g filter="" transform="translate(0, 0)">
+    <!-- Main Sweeping Kinetic Loop & Sculpted Arrow -->
+    <path d="
+      M 255 490
+      C 220 440, 215 375, 235 320
+      C 240 305, 255 295, 270 300
+      C 285 305, 292 320, 288 335
+      C 275 375, 280 420, 305 455
+      C 345 510, 415 540, 480 525
+      C 555 510, 610 445, 610 370
+      C 610 280, 540 205, 450 200
+      C 380 195, 315 235, 280 295
+      L 315 315
+      C 328 322, 325 342, 310 348
+      L 180 395
+      C 165 400, 150 388, 152 372
+      L 168 235
+      C 170 218, 190 212, 202 222
+      L 235 248
+      C 285 165, 380 115, 480 120
+      C 615 125, 725 235, 730 370
+      C 735 510, 630 630, 490 645
+      C 390 655, 295 600, 245 515
+      C 238 502, 245 488, 255 490
+      Z"
+      fill="url(#mono-dark)" />
+
+    <!-- Specular Highlight Arc -->
+    <path d="
+      M 235 248
+      C 285 165, 380 115, 480 120
+      C 615 125, 725 235, 730 370
+      C 730 375, 728 380, 725 385
+      C 720 255, 615 150, 485 145
+      C 395 140, 310 185, 255 258
+      Z"
+      fill="url(#specular-glow)" />
+
+    <!-- Orbital Catalyst / Kinetic Core -->
+    <circle cx="450" cy="370" r="42" fill="url(#mono-dark)" opacity="0.9"/>
+    <circle cx="450" cy="370" r="16" fill="#FFFFFF"/>
+  </g>
+</svg>

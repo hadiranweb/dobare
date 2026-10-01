@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, ArrowUpLeft, Check, ChevronDown, ChevronLeft, ChevronRight, Clock, Heart, Leaf, Menu, Phone, RotateCcw, Send, Sparkles, X } from "lucide-react";
+import { ArrowLeft, ArrowUpLeft, Check, ChevronDown, ChevronLeft, ChevronRight, Clock, Heart, Leaf, Menu, Phone, Send, Sparkles, X } from "lucide-react";
+import { BrandMark } from "@/components/brand-logo";
 
 type ProductImage = { imageUrl: string; thumbUrl: string | null };
 type ProductSpec = { key: string; value: string };
@@ -89,7 +90,7 @@ export default function Storefront({ initialProducts }: { initialProducts: Produ
   return <div className="site-shell">
     <header className="header" id="top">
       <div className="header-inner container">
-        <a href="#top" className="brand" aria-label="دوباره، صفحه اصلی"><span className="brand-symbol"><RotateCcw size={20} strokeWidth={2.2} /></span><span>دوباره<span className="brand-dot">.</span></span></a>
+        <a href="#top" className="brand" aria-label="دوباره، صفحه اصلی"><BrandMark priority /><span>دوباره<span className="brand-dot">.</span></span></a>
         <nav className={menuOpen ? "nav nav-open" : "nav"} aria-label="منوی اصلی">
           <a href="#products" onClick={() => setMenuOpen(false)}>وسایل دوست‌داشتنی</a>
           <a href="#how-it-works" onClick={() => setMenuOpen(false)}>چطور کار می‌کنه؟</a>
@@ -134,7 +135,7 @@ export default function Storefront({ initialProducts }: { initialProducts: Produ
 
       <section className="about-section container" id="about"><div className="about-icon"><Heart size={28} fill="currentColor" /></div><div><h2>از یه خونه، برای یه خونه‌ی دیگه.</h2><p>اینجا یه فروشگاه بزرگ نیست؛ یه گوشه‌ی کوچیکه برای وسایلی که هنوز می‌تونن به کار کسی بیان. شاید خونه‌ی بعدی‌شون، خونه‌ی تو باشه.</p></div><a href="#products" className="about-link">دیدن وسایل <ArrowLeft size={18} /></a></section>
     </main>
-    <footer className="footer"><div className="container footer-inner"><a href="#top" className="brand footer-brand"><span className="brand-symbol"><RotateCcw size={18} /></span><span>دوباره<span className="brand-dot">.</span></span></a><span>چیزهای خوب، یک زندگی تازه ♡</span><a href="#top">برگشت به بالا ↑</a></div></footer>
+    <footer className="footer"><div className="container footer-inner"><a href="#top" className="brand footer-brand" aria-label="دوباره، برگشت به بالای صفحه"><BrandMark /><span>دوباره<span className="brand-dot">.</span></span></a><span>چیزهای خوب، یک زندگی تازه ♡</span><a href="#top">برگشت به بالا ↑</a></div></footer>
 
     {selected && <div className="modal-backdrop" onMouseDown={(e) => { if (e.target === e.currentTarget) setSelected(null); }}><div className={view === "details" && !success ? "modal pd-modal" : "modal"} role="dialog" aria-modal="true" aria-labelledby="modal-title"><button className="modal-close" aria-label="بستن" onClick={() => setSelected(null)}><X size={21} /></button>
       {success ? <div className="success-view"><div className="success-icon"><Check size={32} /></div><h2 id="modal-title">شماره‌ت رسید! ♡</h2><p>چه خوب که «{selected.title}» رو پسندیدی. به‌زودی باهات تماس می‌گیرم تا با هم هماهنگ کنیم.</p>{reservationHours ? <div className="reserve-note">⏳ این وسیله تا {reservationHours.toLocaleString("fa-IR")} ساعت برات رزرو شد؛ اگه هماهنگ نشدیم، بعدش دوباره آزاد می‌شه.</div> : null}{contact ? <div className="contact-card"><span className="contact-title">اگه عجله داری، مستقیم با من در تماس باش:</span>{contact.phone && <a className="contact-phone" href={`tel:${contact.phone}`} dir="ltr">{contact.phone.replace(/(\d{4})(\d{3})(\d{4})/, "$1 $2 $3")}</a>}<div className="contact-actions">{contact.telegram && <a className="button contact-telegram" href={`https://t.me/${contact.telegram}`} target="_blank" rel="noreferrer">تلگرام <Send size={16} /></a>}<button className="button button-primary" onClick={() => setSelected(null)}>بله <Check size={16} /></button></div></div> : <button className="button button-primary" onClick={() => setSelected(null)}>خیلی هم عالی <ArrowLeft size={18} /></button>}</div>
