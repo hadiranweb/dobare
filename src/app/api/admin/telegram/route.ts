@@ -60,9 +60,21 @@ export async function POST(request: Request) {
         chat_id: chatId,
         text: "✅ بات «دوباره» وصل شد. از این به بعد اعلان درخواست‌های خرید همین‌جا می‌آید.",
       });
-      extra = test?.ok
-        ? " — پیام تست به چت شما ارسال شد 📩"
-        : ` — ولی پیام تست ارسال نشد (${test?.description === TELEGRAM_NETWORK_ERROR ? "قطعی شبکه" : "TELEGRAM_CHAT_ID را بررسی کنید"}).`;
+      if (test?.ok) {
+        extra = " — پیام تست به چت شما ارسال شد 📩";
+      } else {
+        const why =
+          test?.description === "Bad Request: chat not found"
+            ? "چتی با شناسه‌ی TELEGRAM_CHAT_ID پیدا نشد — به بات پیام /id بدهید تا عدد درست را بگوید"
+            : test?.description === "Forbidden: bot can't initiate conversation with a user"
+              ? "اول داخل تلگرام دکمه‌ی Start بات را بزنید و یک پیام بدهید، بعد دوباره «اتصال بات» را بزنید"
+              : test?.description === "Forbidden: bot was blocked by the user"
+                ? "چت از سمت شما بلاک شده — بات را unblock کنید"
+                : test?.description === TELEGRAM_NETWORK_ERROR
+                  ? "قطعی شبکه به تلگرام"
+                  : test?.description || "TELEGRAM_CHAT_ID را بررسی کنید";
+        extra = ` — ولی پیام تست ارسال نشد: ${why}`;
+      }
     } else {
       extra = " — توجه: TELEGRAM_CHAT_ID تنظیم نشده؛ بدون آن اعلان درخواست‌ها ارسال نمی‌شود.";
     }

@@ -54,8 +54,17 @@ export async function POST(request: Request) {
 async function handle(update: TgUpdate) {
   if (update.message?.text) {
     const chatId = String(update.message.chat.id);
+    const text = update.message.text.trim();
+    // دستور شناسه — برای همه در دسترس است تا صاحب فروشگاه chat id درست خود را پیدا کند
+    if (!adminChatIds().includes(chatId) && (text === "/id" || text === "شناسه" || text.startsWith("/start"))) {
+      await telegramCall("sendMessage", {
+        chat_id: chatId,
+        text: `🔍 شناسه‌ی چت شما: ${chatId}\n\nاگر صاحب فروشگاه «دوباره» هستید، همین عدد را در متغیر TELEGRAM_CHAT_ID در لیارا بگذارید و در پنل دوباره «اتصال بات» را بزنید. 🌿`,
+      });
+      return;
+    }
     if (!adminChatIds().includes(chatId)) return;
-    await handleCommand(chatId, update.message.text.trim());
+    await handleCommand(chatId, text);
   }
   if (update.callback_query) {
     const cb = update.callback_query;
