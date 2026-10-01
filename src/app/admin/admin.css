@@ -45,3 +45,13 @@
 .picker-url-row{display:flex;gap:8px;margin-top:9px}
 .picker-url-row .picker-url-input{flex:1}
 @media(max-width:520px){.picker-grid{grid-template-columns:repeat(4,1fr)}}
+
+/* ── ویرایشگر جدول مشخصات ── */
+.specs-field{margin:14px 0 4px}
+.specs-hint{display:block;font-size:10.5px;color:#8a9187;margin:5px 0 12px;line-height:1.9}
+.spec-row{display:flex;gap:8px;margin-bottom:8px;align-items:center}
+.spec-row input:first-child{flex:0 0 37%}
+.spec-row input:last-of-type{flex:1}
+.spec-remove{border:0;background:#fdeeec;color:#b0552f;width:34px;height:40px;border-radius:9px;display:grid;place-items:center;padding:0;flex:0 0 34px}
+.spec-remove:hover{background:#f9dfd9}
+.spec-add{display:inline-flex;align-items:center;gap:6px;margin-top:2px}

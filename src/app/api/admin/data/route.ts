@@ -6,7 +6,8 @@ import { deleteLocalImages, isLocalImageUrl } from "@/lib/storage";
 import { asc, desc, eq } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
-const MAX_IMAGES = 10;
+const MAX_IMAGES = 15;
+const MAX_SPECS = 15;
 const unauthorized = () => Response.json({ error: "دسترسی مجاز نیست." }, { status: 401 });
 
 async function productsWithImages() {
@@ -22,6 +23,8 @@ async function productsWithImages() {
   }
   return items.map(p => ({
     ...p,
+    newPrice: p.newPrice ?? null,
+    specs: p.specs ?? [],
     images: byProduct.get(p.id)?.length ? byProduct.get(p.id)! : [{ imageUrl: p.imageUrl, thumbUrl: p.thumbUrl }],
   }));
 }
@@ -56,7 +59,23 @@ function parseProduct(body: Record<string, unknown>) {
   const price = Number(body.price);
   if (!title || !description || !Number.isInteger(price) || price < 0) throw new Error("نام، توضیح و قیمت معتبر وارد کنید.");
 
-  // فهرست عکس‌ها: آرایه‌ی images (تا ۱۰ عکس) یا حالت تک‌عکسی‌ی قدیمی (imageUrl)
+  // قیمت نو (اختیاری) — فقط برای نمایش مقایسه‌ای به خریدار؛ خالی یعنی ندارد
+  let newPrice: number | null = null;
+  const newPriceRaw = body.newPrice;
+  if (newPriceRaw !== null && newPriceRaw !== undefined && String(newPriceRaw).trim() !== "") {
+    const n = Number(newPriceRaw);
+    if (!Number.isInteger(n) || n < 0) throw new Error("قیمت نو معتبر نیست.");
+    newPrice = n;
+  }
+
+  // جدول مشخصات (اختیاری): سطرهای «عنوان/مقدار» — سطرهای بی‌عنوان حذف می‌شوند
+  const specsRaw: Array<Record<string, unknown>> = Array.isArray(body.specs) ? body.specs : [];
+  if (specsRaw.length > MAX_SPECS) throw new Error(`جدول مشخصات حداکثر ${MAX_SPECS} سطر دارد.`);
+  const specs = specsRaw
+    .map(s => ({ key: String(s.key || "").trim().slice(0, 40), value: String(s.value || "").trim().slice(0, 120) }))
+    .filter(s => s.key);
+
+  // فهرست عکس‌ها: آرایه‌ی images (تا ۱۵ عکس) یا حالت تک‌عکسی‌ی قدیمی (imageUrl)
   const rawList: Array<Record<string, unknown>> = Array.isArray(body.images)
     ? body.images
     : body.imageUrl
@@ -69,7 +88,7 @@ function parseProduct(body: Record<string, unknown>) {
   const available = body.available !== false;
   // کاور (ستون‌های محصول) همیشه عکس اول است — بقیه‌ی بخش‌های برنامه (کارت‌ها، بات، ...) فقط همین را می‌بینند
   return {
-    values: { title, description, category, condition, imageUrl: images[0].imageUrl, thumbUrl: images[0].thumbUrl, price, available, ...(available ? { reservedAt: null } : {}) },
+    values: { title, description, category, condition, newPrice, specs: specs.length ? specs : null, imageUrl: images[0].imageUrl, thumbUrl: images[0].thumbUrl, price, available, ...(available ? { reservedAt: null } : {}) },
     images,
   };
 }

@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, ArrowUpLeft, Check, ChevronDown, ChevronLeft, ChevronRight, Clock, Heart, Leaf, Menu, Phone, RotateCcw, Send, Sparkles, X } from "lucide-react";
 
 type ProductImage = { imageUrl: string; thumbUrl: string | null };
-type Product = { id: number; title: string; description: string; price: number; imageUrl: string; thumbUrl: string | null; images: ProductImage[]; category: string; condition: string; available: boolean; reservedAt: string | null };
+type ProductSpec = { key: string; value: string };
+type Product = { id: number; title: string; description: string; price: number; newPrice: number | null; specs: ProductSpec[]; imageUrl: string; thumbUrl: string | null; images: ProductImage[]; category: string; condition: string; available: boolean; reservedAt: string | null };
 const formatPrice = (price: number) => new Intl.NumberFormat("fa-IR").format(price);
 const heroImage = "/hero.webp";
 
@@ -13,6 +14,7 @@ export default function Storefront({ initialProducts }: { initialProducts: Produ
   const [selected, setSelected] = useState<Product | null>(null);
   const [view, setView] = useState<"details" | "inquiry">("details");
   const [galleryIndex, setGalleryIndex] = useState(0);
+  const galleryRef = useRef<HTMLDivElement | null>(null);
   const [phone, setPhone] = useState("");
   const [name, setName] = useState("");
   const [message, setMessage] = useState("");
@@ -27,14 +29,36 @@ export default function Storefront({ initialProducts }: { initialProducts: Produ
 
   const selectedImages = selected?.images?.length ? selected.images : selected ? [{ imageUrl: selected.imageUrl, thumbUrl: selected.thumbUrl }] : [];
 
+  // گالری سوایپی — track با جهت LTR تا رفتار اسکرول در همه مرورگرها یکسان باشد
+  const onGalleryScroll = () => {
+    const el = galleryRef.current;
+    if (!el || el.clientWidth === 0) return;
+    const i = Math.max(0, Math.min(selectedImages.length - 1, Math.round(el.scrollLeft / el.clientWidth)));
+    if (i !== galleryIndex) setGalleryIndex(i);
+  };
+  const goToImage = (i: number) => {
+    const el = galleryRef.current;
+    if (!el) return;
+    el.scrollTo({ left: i * el.clientWidth, behavior: "smooth" });
+    setGalleryIndex(i);
+  };
+
+  // با هر باز شدن مودال، گالری به عکس اول برمی‌گردد
+  useEffect(() => {
+    const el = galleryRef.current;
+    if (el) el.scrollLeft = 0;
+    setGalleryIndex(0);
+  }, [selected?.id, view]);
+
   useEffect(() => {
     if (!selected) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") setSelected(null);
-      // گالری: در چیدمان راست‌به‌چپ، فلش چپ یعنی عکس بعدی
       if (view === "details" && selectedImages.length > 1) {
-        if (e.key === "ArrowLeft") setGalleryIndex(i => (i + 1) % selectedImages.length);
-        if (e.key === "ArrowRight") setGalleryIndex(i => (i - 1 + selectedImages.length) % selectedImages.length);
+        const el = galleryRef.current;
+        if (!el) return;
+        if (e.key === "ArrowLeft") el.scrollBy({ left: el.clientWidth, behavior: "smooth" });
+        if (e.key === "ArrowRight") el.scrollBy({ left: -el.clientWidth, behavior: "smooth" });
       }
     };
     document.addEventListener("keydown", onKey);
@@ -44,9 +68,9 @@ export default function Storefront({ initialProducts }: { initialProducts: Produ
 
   const resetInquiryState = () => { setPhone(""); setName(""); setMessage(""); setError(""); setSuccess(false); setContact(null); setReservationHours(null); };
   // کلیک روی کارت → جزئیات کامل با گالری
-  const openProduct = (product: Product) => { setSelected(product); setView("details"); setGalleryIndex(0); resetInquiryState(); };
+  const openProduct = (product: Product) => { setSelected(product); setView("details"); resetInquiryState(); };
   // دکمه‌ی کوچک گوشه‌ی کارت → مستقیم فرم ثبت شماره
-  const openInterest = (product: Product) => { setSelected(product); setView("inquiry"); setGalleryIndex(0); resetInquiryState(); };
+  const openInterest = (product: Product) => { setSelected(product); setView("inquiry"); resetInquiryState(); };
   const submitInterest = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selected) return;
@@ -96,11 +120,11 @@ export default function Storefront({ initialProducts }: { initialProducts: Produ
       <section className="promise-strip" aria-label="ویژگی‌های دوباره"><div className="container promise-inner"><span><Heart size={18} /> وسایل با قصه و خاطره</span><i /><span><Leaf size={19} /> انتخابی مهربون با زمین</span><i /><span><Phone size={18} /> یک تماس ساده، بدون دردسر</span></div></section>
 
       <section className="products-section container" id="products">
-        <div className="section-heading"><div><div className="section-kicker"><span>✳</span> از خونه‌ی من به خونه‌ی تو</div><h2>وسایل دوست‌داشتنی</h2><p>یه گشتی بزن؛ برای جزئیات بیشتر روی هر کارت بزن.</p></div>{initialProducts.length > 0 && <div className="section-count">{new Intl.NumberFormat("fa-IR").format(initialProducts.length)} تا چیزِ خوب اینجاست <span>↙</span></div>}</div>
+        <div className="section-heading"><div><div className="section-kicker"><span>✳</span> از خونه‌ی من به خونه‌ی تو</div><h2>وسایل دوست‌داشتنی</h2><p>روی هر کارت بزن تا جزئیات، عکس‌ها و مشخصاتش رو ببینی.</p></div>{initialProducts.length > 0 && <div className="section-count">{new Intl.NumberFormat("fa-IR").format(initialProducts.length)} تا چیزِ خوب اینجاست <span>↙</span></div>}</div>
         <div className="filters" role="group" aria-label="فیلتر دسته‌بندی">{categories.map(c => <button type="button" key={c} className={category === c ? "filter active" : "filter"} onClick={() => setCategory(c)}>{c}</button>)}</div>
         <div className="product-grid">{visible.map((product, index) => <article className="product-card" key={product.id} tabIndex={0} role="button" aria-label={`جزئیات ${product.title}`} onClick={() => openProduct(product)} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openProduct(product); } }}>
           <div className="product-image-wrap"><img src={product.thumbUrl || product.imageUrl} alt={product.title} loading={index > 2 ? "lazy" : "eager"} /><span className={product.available ? "condition-badge" : product.reservedAt ? "condition-badge reserved" : "condition-badge sold"}><span className="badge-dot" /> {product.available ? product.condition : product.reservedAt ? "رزرو شده" : "واگذار شده"}</span>{product.images?.length > 1 && <span className="photo-count">📷 {product.images.length.toLocaleString("fa-IR")}</span>}</div>
-          <div className="product-content"><div className="product-category">{product.category}</div><h3>{product.title}</h3><p>{product.description}</p><div className="product-bottom"><div className="price"><strong>{formatPrice(product.price)}</strong><span>تومان</span></div><button className="interest-button" onClick={e => { e.stopPropagation(); openInterest(product); }} disabled={!product.available} aria-label={product.available ? `درخواست ${product.title}` : product.reservedAt ? `${product.title} فعلاً رزرو شده` : `${product.title} واگذار شده`}>{product.available ? <ArrowUpLeft size={21} /> : product.reservedAt ? <Clock size={19} /> : <Check size={19} />}</button></div></div>
+          <div className="product-content"><div className="product-category">{product.category}</div><h3>{product.title}</h3><p>{product.description}</p><div className="product-bottom"><div className="price"><strong>{formatPrice(product.price)}</strong><span>تومان</span>{product.newPrice ? <s className="card-new-price">نو: {formatPrice(product.newPrice)} تومان</s> : null}</div><button className="interest-button" onClick={e => { e.stopPropagation(); openInterest(product); }} disabled={!product.available} aria-label={product.available ? `درخواست ${product.title}` : product.reservedAt ? `${product.title} فعلاً رزرو شده` : `${product.title} واگذار شده`}>{product.available ? <ArrowUpLeft size={21} /> : product.reservedAt ? <Clock size={19} /> : <Check size={19} />}</button></div></div>
         </article>)}</div>
         {visible.length === 0 && <div className="empty-state">{initialProducts.length === 0 ? "هنوز وسیله‌ای برای فروش نذاشتم؛ به‌زودی دوباره سر بزن!" : "فعلاً وسیله‌ای در این دسته نیست. یه سر به بقیه‌ی وسایل بزن!"}</div>}
         <div className="below-grid-note"><span>✦</span> هر وسیله فقط یکیه؛ اگه چیزی دلت رو برد، معطل نکن! <span>✦</span></div>
@@ -116,26 +140,36 @@ export default function Storefront({ initialProducts }: { initialProducts: Produ
       {success ? <div className="success-view"><div className="success-icon"><Check size={32} /></div><h2 id="modal-title">شماره‌ت رسید! ♡</h2><p>چه خوب که «{selected.title}» رو پسندیدی. به‌زودی باهات تماس می‌گیرم تا با هم هماهنگ کنیم.</p>{reservationHours ? <div className="reserve-note">⏳ این وسیله تا {reservationHours.toLocaleString("fa-IR")} ساعت برات رزرو شد؛ اگه هماهنگ نشدیم، بعدش دوباره آزاد می‌شه.</div> : null}{contact ? <div className="contact-card"><span className="contact-title">اگه عجله داری، مستقیم با من در تماس باش:</span>{contact.phone && <a className="contact-phone" href={`tel:${contact.phone}`} dir="ltr">{contact.phone.replace(/(\d{4})(\d{3})(\d{4})/, "$1 $2 $3")}</a>}<div className="contact-actions">{contact.telegram && <a className="button contact-telegram" href={`https://t.me/${contact.telegram}`} target="_blank" rel="noreferrer">تلگرام <Send size={16} /></a>}<button className="button button-primary" onClick={() => setSelected(null)}>بله <Check size={16} /></button></div></div> : <button className="button button-primary" onClick={() => setSelected(null)}>خیلی هم عالی <ArrowLeft size={18} /></button>}</div>
         : view === "details" ? <>
           <div className="pd-gallery">
-            <img className="pd-main-img" src={selectedImages[galleryIndex]?.imageUrl || selected.imageUrl} alt={`${selected.title} — عکس ${(galleryIndex + 1).toLocaleString("fa-IR")}`} />
+            <div className="pd-track" ref={galleryRef} onScroll={onGalleryScroll} dir="ltr">
+              {selectedImages.map((img, i) => <div className="pd-slide" key={`${img.imageUrl}-${i}`}><img src={img.imageUrl} alt={`${selected.title} — عکس ${(i + 1).toLocaleString("fa-IR")}`} loading={i === 0 ? "eager" : "lazy"} /></div>)}
+            </div>
             {selectedImages.length > 1 && <>
-              <button className="pd-nav pd-prev" aria-label="عکس قبلی" onClick={() => setGalleryIndex(i => (i - 1 + selectedImages.length) % selectedImages.length)}><ChevronRight size={22} /></button>
-              <button className="pd-nav pd-next" aria-label="عکس بعدی" onClick={() => setGalleryIndex(i => (i + 1) % selectedImages.length)}><ChevronLeft size={22} /></button>
+              <button className="pd-nav pd-prev" aria-label="عکس قبلی" onClick={() => goToImage((galleryIndex - 1 + selectedImages.length) % selectedImages.length)}><ChevronRight size={22} /></button>
+              <button className="pd-nav pd-next" aria-label="عکس بعدی" onClick={() => goToImage((galleryIndex + 1) % selectedImages.length)}><ChevronLeft size={22} /></button>
               <span className="pd-counter">{(galleryIndex + 1).toLocaleString("fa-IR")} از {selectedImages.length.toLocaleString("fa-IR")}</span>
             </>}
           </div>
-          {selectedImages.length > 1 && <div className="pd-thumbs" role="tablist" aria-label="عکس‌های وسیله">{selectedImages.map((img, i) => <button key={`${img.imageUrl}-${i}`} className={i === galleryIndex ? "pd-thumb active" : "pd-thumb"} style={{ backgroundImage: `url(${img.thumbUrl || img.imageUrl})` }} aria-label={`عکس ${(i + 1).toLocaleString("fa-IR")}`} onClick={() => setGalleryIndex(i)} />)}</div>}
+          {selectedImages.length > 1 && <div className="pd-thumbs" role="tablist" aria-label="عکس‌های وسیله">{selectedImages.map((img, i) => <button key={`${img.imageUrl}-t${i}`} className={i === galleryIndex ? "pd-thumb active" : "pd-thumb"} style={{ backgroundImage: `url(${img.thumbUrl || img.imageUrl})` }} aria-label={`عکس ${(i + 1).toLocaleString("fa-IR")}`} onClick={() => goToImage(i)} />)}</div>}
           <div className="pd-info">
             <div className="pd-chips"><span className="pd-chip">{selected.category}</span><span className="pd-chip pd-chip-condition">✦ {selected.condition}</span></div>
             <h2 id="modal-title">{selected.title}</h2>
-            <div className="pd-price-row"><div className="price"><strong>{formatPrice(selected.price)}</strong><span>تومان</span></div><span className={selected.available ? "pd-status available" : selected.reservedAt ? "pd-status reserved" : "pd-status sold"}>{selected.available ? "🟢 موجود" : selected.reservedAt ? "🟠 رزرو شده" : "⚪ واگذار شده"}</span></div>
+            <div className="pd-price-row">
+              <div className="pd-price-main">
+                <div className="price"><strong>{formatPrice(selected.price)}</strong><span>تومان</span></div>
+                {selected.newPrice ? <s className="pd-new-price" dir="rtl">نو: {formatPrice(selected.newPrice)} تومان</s> : null}
+                {selected.newPrice && selected.newPrice > selected.price ? <span className="pd-discount">٪{Math.round((1 - selected.price / selected.newPrice) * 100).toLocaleString("fa-IR")} ارزون‌تر از نو</span> : null}
+              </div>
+              <span className={selected.available ? "pd-status available" : selected.reservedAt ? "pd-status reserved" : "pd-status sold"}>{selected.available ? "🟢 موجود" : selected.reservedAt ? "🟠 رزرو شده" : "⚪ واگذار شده"}</span>
+            </div>
             <p className="pd-desc">{selected.description}</p>
+            {selected.specs?.length > 0 && <div className="pd-specs"><h4>مشخصات</h4>{selected.specs.map((s, i) => <div className="pd-spec-row" key={`${s.key}-${i}`}><span className="pd-spec-key">{s.key}</span><span className="pd-spec-value">{s.value}</span></div>)}</div>}
             {selected.available
               ? <button className="button button-primary pd-cta" onClick={() => setView("inquiry")}>می‌خوامش! شماره‌ام رو بذار ☎ <ArrowLeft size={18} /></button>
               : <div className="pd-status-note">{selected.reservedAt ? "این وسیله فعلاً توسط شخص دیگری رزرو شده؛ اگه آزاد شد دوباره اینجا دیده می‌شه." : "این وسیله واگذار شده و دیگه موجود نیست."}</div>}
           </div>
         </>
         : <>
-          <div className="modal-top"><img src={selectedImages[galleryIndex]?.imageUrl || selected.imageUrl} alt={selected.title} /><div><span>این یکی رو پسندیدی؟</span><h2 id="modal-title">{selected.title}</h2><p>{formatPrice(selected.price)} تومان</p></div></div>
+          <div className="modal-top"><img src={selectedImages[0]?.imageUrl || selected.imageUrl} alt={selected.title} /><div><span>این یکی رو پسندیدی؟</span><h2 id="modal-title">{selected.title}</h2><p>{formatPrice(selected.price)} تومان</p></div></div>
           <div className="modal-body">
             {view === "inquiry" && selected.available && <button className="pd-back" onClick={() => setView("details")}><ChevronRight size={16} /> برگشت به جزئیات</button>}
             <h3>بذار باهات تماس بگیرم ☎</h3>

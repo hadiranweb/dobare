@@ -1,10 +1,17 @@
-import { boolean, integer, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
+import { boolean, integer, jsonb, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
+
+// مشخصات تکمیلی کالا — قیمت نو (اختیاری) و جدول مشخصات { key, value }
+export type ProductSpec = { key: string; value: string };
 
 export const products = pgTable("products", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),
   description: text("description").notNull(),
   price: integer("price").notNull(),
+  // قیمت نو‌ی محصول (اختیاری) — برای نمایش مقایسه‌ای «چند ارزون‌تر از نو» به خریدار
+  newPrice: integer("new_price"),
+  // جدول مشخصات دلخواه: سطرهای «عنوان/مقدار» مثل رنگ، ابعاد، کارکرد — ترتیب حفظ می‌شود
+  specs: jsonb("specs").$type<ProductSpec[]>(),
   imageUrl: text("image_url").notNull(), // کاور = عکس اول
   thumbUrl: text("thumb_url"),
   category: text("category").notNull().default("متفرقه"),

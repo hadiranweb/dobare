@@ -67,3 +67,23 @@
 .pd-back{display:inline-flex;align-items:center;gap:5px;border:0;background:none;color:#7d8a7e;font-size:11.5px;font-weight:700;padding:0 0 10px}
 .pd-back:hover{color:var(--green)}
 @media(max-width:680px){.pd-modal{width:100%}.pd-main-img{max-height:38vh}.pd-info{padding:17px 20px 22px}.pd-info h2{font-size:20px}.pd-thumb{flex:0 0 48px;height:48px}}
+
+/* ── گالری سوایپی (مثل دیوار/اینستاگرام) ── */
+.pd-track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-ms-overflow-style:none;direction:ltr;scroll-behavior:smooth}
+.pd-track::-webkit-scrollbar{display:none}
+.pd-slide{flex:0 0 100%;scroll-snap-align:start;scroll-snap-stop:always}
+.pd-slide img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block;max-height:52vh;background:#eef0e6}
+
+/* ── قیمت نو و تخفیف ── */
+.card-new-price{display:block;font-size:9.5px;color:#a9b0a4;font-weight:600;text-decoration:line-through;margin-top:3px;letter-spacing:0}
+.pd-price-main{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.pd-new-price{font-size:12px;color:#a3a89e;font-weight:600}
+.pd-discount{background:#e9f2e7;color:#3f6b47;font-size:11px;font-weight:800;border-radius:99px;padding:5px 11px;white-space:nowrap}
+
+/* ── جدول مشخصات در پاپ‌آپ ── */
+.pd-specs{margin:2px 0 20px;background:#f7f8f1;border:1px solid #e8ead9;border-radius:14px;padding:14px 16px 10px}
+.pd-specs h4{font-size:12.5px;font-weight:900;margin:0 0 6px;color:#3d4a40}
+.pd-spec-row{display:flex;gap:12px;padding:8px 2px;border-bottom:1px dashed #e0e2d0;font-size:12.5px;align-items:baseline}
+.pd-spec-row:last-child{border-bottom:0}
+.pd-spec-key{flex:0 0 33%;color:#7d897d;font-weight:700}
+.pd-spec-value{flex:1;color:#39463c;font-weight:600;line-height:1.9}
