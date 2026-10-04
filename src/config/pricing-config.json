@@ -1,0 +1,471 @@
+{
+  "$schema": "https://example.com/pricing-matrix/v1",
+  "version": "1.0.0",
+  "currency": "IRT",
+  "locale": "fa-IR",
+  "description": "پیکربندی اعلانی ماتریس قیمت‌گذاری کالای دست‌دوم. فرم «افزودن محصول» را می‌توان کامل از روی همین فایل ساخت.",
+
+  "contract": {
+    "input": "rcv = قیمت نو معادل امروز (تومان)",
+    "inflation": "خارج از اسکوپ — بالادست اعمال می‌شود",
+    "formula": "price = rcv × qty × clamp(gen × drop × ageF × useF × Π(moduleFactors) × Π(marketFactors) × (1 + Σbonuses), floor, cap)",
+    "materialFloorNote": "در دسته‌هایی که ماژول material فعال است، قیمت واحد نهایی هرگز زیر materialValue نمی‌رود"
+  },
+
+  "output": {
+    "negotiationFloorMultiplier": 0.88,
+    "listPriceMultiplier": 1.12
+  },
+
+  "universalFields": {
+    "rcv": {
+      "section": "base",
+      "type": "number",
+      "label": "قیمت نو معادل امروز",
+      "unit": "تومان",
+      "min": 0,
+      "required": true,
+      "help": "ارزان‌ترین فروشنده موجود، نه گران‌ترین",
+      "role": "base"
+    },
+    "generation": {
+      "section": "base",
+      "type": "select",
+      "label": "تطبیق نسل / مدل روز",
+      "default": "one_behind",
+      "role": "factor",
+      "options": [
+        { "value": "current",     "label": "همین مدل هنوز نو عرضه می‌شود", "factor": 1.00 },
+        { "value": "one_behind",  "label": "یک نسل عقب‌تر",                 "factor": 0.90 },
+        { "value": "two_behind",  "label": "دو نسل عقب‌تر",                 "factor": 0.82 },
+        { "value": "obsolete",    "label": "منسوخ، قطعه کمیاب",            "factor": 0.72 }
+      ]
+    },
+    "cosmetic": {
+      "section": "condition",
+      "type": "select",
+      "label": "وضعیت ظاهری",
+      "default": "excellent",
+      "role": "factor",
+      "options": [
+        { "value": "like_new",   "label": "در حد آکبند",        "factor": 1.03 },
+        { "value": "excellent",  "label": "عالی، بدون عیب",      "factor": 1.00 },
+        { "value": "good",       "label": "خوب، خط‌وخش جزئی",    "factor": 0.93 },
+        { "value": "fair",       "label": "متوسط، آسیب دیدنی",   "factor": 0.84 },
+        { "value": "poor",       "label": "ضعیف",                "factor": 0.72 },
+        { "value": "parts",      "label": "معیوب / قطعه‌ای",      "factor": 0.45 }
+      ]
+    },
+    "brand": {
+      "section": "market",
+      "type": "select",
+      "label": "رده برند",
+      "default": "mid",
+      "role": "factor",
+      "options": [
+        { "value": "luxury",  "label": "لوکس / مرجع بازار",   "factor": 1.10 },
+        { "value": "premium", "label": "درجه‌یک شناخته‌شده",   "factor": 1.05 },
+        { "value": "mid",     "label": "متوسط",               "factor": 1.00 },
+        { "value": "budget",  "label": "اقتصادی",             "factor": 0.93 },
+        { "value": "noname",  "label": "بی‌نام / نامشخص",      "factor": 0.85 }
+      ]
+    },
+    "demand": {
+      "section": "market",
+      "type": "select",
+      "label": "تقاضای فعلی بازار",
+      "default": "normal",
+      "role": "factor",
+      "options": [
+        { "value": "hot",     "label": "کمیاب، تقاضای بالا",   "factor": 1.12 },
+        { "value": "normal",  "label": "عادی",                 "factor": 1.00 },
+        { "value": "crowded", "label": "عرضه زیاد، رقابت شدید", "factor": 0.90 },
+        { "value": "dead",    "label": "بازار راکد",            "factor": 0.78 }
+      ]
+    },
+    "season": {
+      "section": "market",
+      "type": "select",
+      "label": "فصل / زمان‌بندی",
+      "default": "neutral",
+      "role": "factor",
+      "options": [
+        { "value": "peak",    "label": "اوج فصل تقاضا", "factor": 1.08 },
+        { "value": "neutral", "label": "خنثی",          "factor": 1.00 },
+        { "value": "off",     "label": "خارج از فصل",   "factor": 0.92 }
+      ]
+    },
+    "location": {
+      "section": "market",
+      "type": "select",
+      "label": "موقعیت جغرافیایی",
+      "default": "metro",
+      "role": "factor",
+      "options": [
+        { "value": "metro",    "label": "کلانشهر",          "factor": 1.00 },
+        { "value": "town",     "label": "شهرستان",          "factor": 0.93 },
+        { "value": "remote",   "label": "منطقه کم‌تقاضا",    "factor": 0.88 }
+      ]
+    },
+    "urgency": {
+      "section": "market",
+      "type": "select",
+      "label": "فوریت فروش",
+      "default": "patient",
+      "role": "factor",
+      "options": [
+        { "value": "patient", "label": "عجله ندارم",        "factor": 1.00 },
+        { "value": "soon",    "label": "ظرف ۲ هفته",        "factor": 0.93 },
+        { "value": "urgent",  "label": "فوری، همین هفته",   "factor": 0.82 }
+      ]
+    }
+  },
+
+  "modules": {
+    "time": {
+      "label": "زمان و فرسایش",
+      "note": "سن = پوسیدگی مواد و منسوخ شدن (حتی خاموش). کارکرد = سایش مکانیکی. دو پدیده جدا، دو نرخ جدا.",
+      "fields": {
+        "ageYears": {
+          "type": "number", "label": "سن تقویمی", "unit": "سال", "min": 0, "step": 0.5, "default": 0,
+          "role": "decay", "rateFrom": "profile.ageRate",
+          "formula": "pow(1 - ageRate, ageYears)"
+        },
+        "usageAmount": {
+          "type": "number", "label": "{{profile.usageLabel}}", "min": 0, "step": 1, "default": 0,
+          "role": "decay", "rateFrom": "profile.useRate", "divisorFrom": "profile.usagePerYear",
+          "formula": "pow(1 - useRate, usageAmount / usagePerYear)"
+        }
+      }
+    },
+
+    "technical": {
+      "label": "وضعیت فنی و عملکردی",
+      "fields": {
+        "technical": {
+          "type": "select", "label": "وضعیت فنی", "default": "flawless", "role": "factor",
+          "options": [
+            { "value": "flawless",  "label": "بی‌عیب و تست‌شده",          "factor": 1.00 },
+            { "value": "minor",     "label": "ایراد جزئی غیرکارکردی",     "factor": 0.93 },
+            { "value": "service",   "label": "نیاز به سرویس",             "factor": 0.78 },
+            { "value": "major",     "label": "ایراد اساسی",               "factor": 0.45 },
+            { "value": "dead",      "label": "خراب، فقط برای قطعه",       "factor": 0.20 }
+          ]
+        }
+      }
+    },
+
+    "battery": {
+      "label": "سلامت باتری",
+      "fields": {
+        "batteryHealth": {
+          "type": "number", "label": "سلامت باتری", "unit": "٪", "min": 0, "max": 100, "default": 100,
+          "role": "linear", "mapTo": { "inputMin": 0, "inputMax": 100, "factorMin": 0.70, "factorMax": 1.00 }
+        }
+      }
+    },
+
+    "hygiene": {
+      "label": "بهداشت",
+      "severity": "high",
+      "fields": {
+        "hygiene": {
+          "type": "select", "label": "وضعیت بهداشتی", "default": "sealed", "role": "factor",
+          "options": [
+            { "value": "sealed",    "label": "پلمب، هرگز استفاده نشده",     "factor": 1.00 },
+            { "value": "sanitized", "label": "شسته و ضدعفونی‌شده، بدون لک", "factor": 0.80 },
+            { "value": "clean",     "label": "تمیز ولی استفاده‌شده",        "factor": 0.60 },
+            { "value": "stained",   "label": "لک یا بوی باقی‌مانده",         "factor": 0.35 }
+          ]
+        }
+      }
+    },
+
+    "expiry": {
+      "label": "انقضا",
+      "fields": {
+        "shelfLifeRemaining": {
+          "type": "number", "label": "عمر باقی‌مانده تا انقضا", "unit": "٪", "min": 0, "max": 100, "default": 100,
+          "role": "linear", "mapTo": { "inputMin": 0, "inputMax": 100, "factorMin": 0.40, "factorMax": 1.00 }
+        }
+      }
+    },
+
+    "quantity": {
+      "label": "تعداد و بسته‌بندی",
+      "fields": {
+        "qty": {
+          "type": "number", "label": "تعداد / مقدار", "min": 1, "step": 1, "default": 1,
+          "role": "multiplier",
+          "note": "در قیمت واحد ضرب می‌شود، نه در ضریب"
+        },
+        "packaging": {
+          "type": "select", "label": "وضعیت بسته‌بندی", "default": "sealed", "role": "factor",
+          "options": [
+            { "value": "sealed",    "label": "پلمب و کامل",            "factor": 1.00 },
+            { "value": "opened",    "label": "باز شده ولی دست‌نخورده", "factor": 0.92 },
+            { "value": "partial",   "label": "ته‌مانده پروژه، ناقص",    "factor": 0.80 },
+            { "value": "loose",     "label": "فله و بدون بسته",        "factor": 0.65 }
+          ]
+        }
+      }
+    },
+
+    "logistics": {
+      "label": "حمل و نقل",
+      "fields": {
+        "logistics": {
+          "type": "select", "label": "سهولت حمل", "default": "easy", "role": "factor",
+          "options": [
+            { "value": "easy",  "label": "قابل پست یا حمل آسان",          "factor": 1.00 },
+            { "value": "bulky", "label": "حجیم، نیاز به وانت",            "factor": 0.95 },
+            { "value": "heavy", "label": "سنگین، نیاز به کارگر و جرثقیل", "factor": 0.88 }
+          ]
+        }
+      }
+    },
+
+    "fit": {
+      "label": "سایز و تناسب",
+      "fields": {
+        "fit": {
+          "type": "select", "label": "سایز", "default": "popular", "role": "factor",
+          "options": [
+            { "value": "popular", "label": "سایز پرتقاضا و متداول",        "factor": 1.00 },
+            { "value": "normal",  "label": "سایز معمولی",                  "factor": 0.90 },
+            { "value": "extreme", "label": "سایز خیلی بزرگ یا خیلی کوچک",  "factor": 0.75 }
+          ]
+        }
+      }
+    },
+
+    "legal": {
+      "label": "وضعیت حقوقی",
+      "severity": "high",
+      "fields": {
+        "legal": {
+          "type": "select", "label": "سند و مدارک", "default": "clean", "role": "factor",
+          "options": [
+            { "value": "clean",      "label": "سند و مدارک کامل و پاک",      "factor": 1.00 },
+            { "value": "incomplete", "label": "مدارک ناقص",                  "factor": 0.88 },
+            { "value": "problem",    "label": "مشکل سند، رجیستر یا توقیف",   "factor": 0.70 }
+          ]
+        }
+      }
+    },
+
+    "rarity": {
+      "label": "کمیابی",
+      "note": "در دسته‌هایی که این ماژول فعال است، ageRate منفی است و سن ارزش‌افزا می‌شود",
+      "fields": {
+        "rarity": {
+          "type": "select", "label": "درجه کمیابی", "default": "common", "role": "factor",
+          "options": [
+            { "value": "common",    "label": "عادی",                      "factor": 1.00 },
+            { "value": "scarce",    "label": "کمیاب، تولید متوقف",        "factor": 1.35 },
+            { "value": "rare",      "label": "نادر با اصالت تأییدشده",    "factor": 1.90 },
+            { "value": "unique",    "label": "منحصربه‌فرد / موزه‌ای",       "factor": 3.00 }
+          ]
+        }
+      }
+    },
+
+    "material": {
+      "label": "ارزش ذاتی ماده",
+      "note": "کف مطلق روی قیمت واحد نهایی، نه روی ضریب",
+      "fields": {
+        "materialValue": {
+          "type": "number", "label": "ارزش ذوب / مواد خام", "unit": "تومان", "min": 0, "default": 0,
+          "role": "absoluteFloor"
+        }
+      }
+    }
+  },
+
+  "categories": {
+    "appliance_big": {
+      "name": "لوازم خانگی بزرگ (یخچال، لباسشویی، کولر)",
+      "profile": { "drop": 0.85, "ageRate": 0.04, "useRate": 0.07, "usefulLife": 13, "floor": 0.12, "cap": 0.85, "usageLabel": "ماه روشن بودن", "usagePerYear": 12 },
+      "modules": ["time", "technical", "logistics"],
+      "bonuses": [
+        { "id": "box",      "label": "کارتن اصلی",         "bonus": 0.03 },
+        { "id": "invoice",  "label": "فاکتور خرید",        "bonus": 0.03 },
+        { "id": "warranty", "label": "گارانتی معتبر",      "bonus": 0.08 },
+        { "id": "manual",   "label": "دفترچه و متعلقات",   "bonus": 0.02 },
+        { "id": "service",  "label": "سرویس دوره‌ای مستند", "bonus": 0.03 },
+        { "id": "inverter", "label": "کمپرسور اینورتر",    "bonus": 0.04 },
+        { "id": "energy",   "label": "رتبه انرژی ++A",     "bonus": 0.04 }
+      ]
+    },
+    "appliance_small": {
+      "name": "لوازم خانگی کوچک (مایکروویو، جاروبرقی، اتو)",
+      "profile": { "drop": 0.80, "ageRate": 0.05, "useRate": 0.09, "usefulLife": 8, "floor": 0.10, "cap": 0.82, "usageLabel": "ماه استفاده", "usagePerYear": 12 },
+      "modules": ["time", "technical"],
+      "bonuses": [
+        { "id": "box",       "label": "جعبه اصلی",        "bonus": 0.04 },
+        { "id": "invoice",   "label": "فاکتور",           "bonus": 0.03 },
+        { "id": "warranty",  "label": "گارانتی معتبر",    "bonus": 0.08 },
+        { "id": "accessory", "label": "لوازم جانبی کامل", "bonus": 0.04 }
+      ]
+    },
+    "phone": {
+      "name": "موبایل و تبلت",
+      "profile": { "drop": 0.78, "ageRate": 0.14, "useRate": 0.06, "usefulLife": 5, "floor": 0.08, "cap": 0.88, "usageLabel": "ماه استفاده", "usagePerYear": 12 },
+      "modules": ["time", "technical", "battery", "legal"],
+      "bonuses": [
+        { "id": "box",       "label": "جعبه و لوازم اصلی",      "bonus": 0.05 },
+        { "id": "invoice",   "label": "فاکتور رسمی",            "bonus": 0.04 },
+        { "id": "warranty",  "label": "گارانتی معتبر",          "bonus": 0.08 },
+        { "id": "protected", "label": "گلس و قاب از روز اول",   "bonus": 0.02 },
+        { "id": "unopened",  "label": "بدون تعمیر و باز نشدن",  "bonus": 0.06 }
+      ]
+    },
+    "laptop": {
+      "name": "لپ‌تاپ و کامپیوتر",
+      "profile": { "drop": 0.78, "ageRate": 0.13, "useRate": 0.07, "usefulLife": 6, "floor": 0.08, "cap": 0.85, "usageLabel": "ماه استفاده", "usagePerYear": 12 },
+      "modules": ["time", "technical", "battery", "logistics"],
+      "bonuses": [
+        { "id": "box",      "label": "جعبه و شارژر اصلی", "bonus": 0.05 },
+        { "id": "invoice",  "label": "فاکتور",            "bonus": 0.03 },
+        { "id": "warranty", "label": "گارانتی معتبر",     "bonus": 0.08 },
+        { "id": "upgrade",  "label": "ارتقا SSD یا رم",   "bonus": 0.06 }
+      ]
+    },
+    "tv": {
+      "name": "تلویزیون، صوتی و تصویری",
+      "profile": { "drop": 0.80, "ageRate": 0.11, "useRate": 0.05, "usefulLife": 9, "floor": 0.08, "cap": 0.85, "usageLabel": "ماه استفاده", "usagePerYear": 12 },
+      "modules": ["time", "technical", "logistics"],
+      "bonuses": [
+        { "id": "box",      "label": "کارتن اصلی",            "bonus": 0.05 },
+        { "id": "invoice",  "label": "فاکتور",                "bonus": 0.03 },
+        { "id": "warranty", "label": "گارانتی معتبر",         "bonus": 0.08 },
+        { "id": "remote",   "label": "پایه و ریموت اصلی",     "bonus": 0.03 },
+        { "id": "panel",    "label": "بدون لکه و خط روی پنل", "bonus": 0.05 }
+      ]
+    },
+    "furniture": {
+      "name": "مبلمان و دکوراسیون",
+      "profile": { "drop": 0.80, "ageRate": 0.03, "useRate": 0.05, "usefulLife": 20, "floor": 0.15, "cap": 0.85, "usageLabel": "سال استفاده", "usagePerYear": 1 },
+      "modules": ["time", "logistics"],
+      "bonuses": [
+        { "id": "set",       "label": "ست کامل",                "bonus": 0.06 },
+        { "id": "invoice",   "label": "فاکتور",                 "bonus": 0.02 },
+        { "id": "reupholst", "label": "روکش تعویض‌شده",          "bonus": 0.05 },
+        { "id": "material",  "label": "چوب طبیعی / جنس مرغوب",  "bonus": 0.07 }
+      ]
+    },
+    "textile": {
+      "name": "منسوجات و کالای خواب (بالشت، تشک، پتو)",
+      "profile": { "drop": 0.55, "ageRate": 0.08, "useRate": 0.12, "usefulLife": 8, "floor": 0.03, "cap": 0.70, "usageLabel": "سال استفاده", "usagePerYear": 1 },
+      "modules": ["time", "hygiene", "logistics"],
+      "bonuses": [
+        { "id": "sealed",  "label": "پلمب و باز نشده",          "bonus": 0.10 },
+        { "id": "cover",   "label": "کاور محافظ از روز اول",    "bonus": 0.05 },
+        { "id": "invoice", "label": "فاکتور",                   "bonus": 0.02 }
+      ]
+    },
+    "clothing": {
+      "name": "پوشاک و کفش",
+      "profile": { "drop": 0.50, "ageRate": 0.10, "useRate": 0.15, "usefulLife": 5, "floor": 0.03, "cap": 0.70, "usageLabel": "دفعات شستشو", "usagePerYear": 40 },
+      "modules": ["time", "hygiene", "fit"],
+      "bonuses": [
+        { "id": "tag",     "label": "برچسب و اتیکت اصلی", "bonus": 0.10 },
+        { "id": "shoebox", "label": "جعبه کفش",           "bonus": 0.03 },
+        { "id": "invoice", "label": "فاکتور بوتیک",       "bonus": 0.03 }
+      ]
+    },
+    "tools": {
+      "name": "ابزار، یراق و تجهیزات کارگاهی",
+      "profile": { "drop": 0.85, "ageRate": 0.03, "useRate": 0.06, "usefulLife": 15, "floor": 0.20, "cap": 0.88, "usageLabel": "ساعت کارکرد", "usagePerYear": 300 },
+      "modules": ["time", "technical"],
+      "bonuses": [
+        { "id": "case",     "label": "کیف یا جعبه اصلی",      "bonus": 0.04 },
+        { "id": "bits",     "label": "متعلقات و سری‌ها کامل", "bonus": 0.06 },
+        { "id": "invoice",  "label": "فاکتور",                "bonus": 0.02 },
+        { "id": "warranty", "label": "گارانتی معتبر",         "bonus": 0.07 }
+      ]
+    },
+    "consumable": {
+      "name": "مصرفی و ساختمانی (پیچ، کابل، کاشی، رنگ)",
+      "profile": { "drop": 0.95, "ageRate": 0.01, "useRate": 0.00, "usefulLife": 0, "floor": 0.40, "cap": 0.95, "usageLabel": "—", "usagePerYear": 1 },
+      "modules": ["quantity", "expiry", "logistics"],
+      "bonuses": [
+        { "id": "invoice", "label": "فاکتور خرید",            "bonus": 0.02 },
+        { "id": "batch",   "label": "همگی از یک سری تولید",   "bonus": 0.05 }
+      ]
+    },
+    "vehicle": {
+      "name": "خودرو و موتورسیکلت",
+      "profile": { "drop": 0.88, "ageRate": 0.06, "useRate": 0.07, "usefulLife": 20, "floor": 0.15, "cap": 0.92, "usageLabel": "کیلومتر کارکرد", "usagePerYear": 15000 },
+      "modules": ["time", "technical", "legal"],
+      "bonuses": [
+        { "id": "insurance", "label": "بیمه بدنه معتبر",          "bonus": 0.03 },
+        { "id": "service",   "label": "سرویس دوره‌ای نمایندگی",   "bonus": 0.06 },
+        { "id": "nopaint",   "label": "بدون رنگ و تصادف",         "bonus": 0.10 },
+        { "id": "tires",     "label": "لاستیک نو",                "bonus": 0.03 },
+        { "id": "title",     "label": "تک‌برگ سند",               "bonus": 0.04 }
+      ]
+    },
+    "gold": {
+      "name": "طلا، نقره و جواهر",
+      "profile": { "drop": 1.00, "ageRate": 0.00, "useRate": 0.01, "usefulLife": 0, "floor": 0.85, "cap": 1.00, "usageLabel": "سال استفاده", "usagePerYear": 1 },
+      "modules": ["time", "material"],
+      "bonuses": [
+        { "id": "invoice", "label": "فاکتور معتبر",          "bonus": 0.03 },
+        { "id": "cert",    "label": "جعبه و گواهی اصالت",    "bonus": 0.05 },
+        { "id": "brand",   "label": "برند معروف",            "bonus": 0.08 }
+      ]
+    },
+    "antique": {
+      "name": "عتیقه، کلکسیونی و هنری",
+      "profile": { "drop": 1.00, "ageRate": -0.02, "useRate": 0.01, "usefulLife": 0, "floor": 0.50, "cap": 3.00, "usageLabel": "سال نگهداری", "usagePerYear": 1 },
+      "modules": ["time", "rarity", "legal"],
+      "bonuses": [
+        { "id": "cert",        "label": "گواهی اصالت",            "bonus": 0.15 },
+        { "id": "provenance",  "label": "سابقه مالکیت مستند",     "bonus": 0.08 },
+        { "id": "frame",       "label": "قاب یا جعبه اصلی",       "bonus": 0.05 }
+      ]
+    },
+    "books": {
+      "name": "کتاب، رسانه و لوازم‌التحریر",
+      "profile": { "drop": 0.60, "ageRate": 0.05, "useRate": 0.08, "usefulLife": 0, "floor": 0.05, "cap": 0.75, "usageLabel": "سال نگهداری", "usagePerYear": 1 },
+      "modules": ["time"],
+      "bonuses": [
+        { "id": "first_ed", "label": "چاپ اول یا نسخه کمیاب", "bonus": 0.15 },
+        { "id": "clean",    "label": "بدون خط‌خوردگی",         "bonus": 0.06 },
+        { "id": "cover",    "label": "جلد سالم",               "bonus": 0.04 }
+      ]
+    },
+    "sports": {
+      "name": "ورزشی و دوچرخه",
+      "profile": { "drop": 0.78, "ageRate": 0.05, "useRate": 0.10, "usefulLife": 12, "floor": 0.10, "cap": 0.85, "usageLabel": "ماه استفاده", "usagePerYear": 12 },
+      "modules": ["time", "technical", "hygiene", "logistics"],
+      "bonuses": [
+        { "id": "invoice",  "label": "فاکتور",            "bonus": 0.03 },
+        { "id": "warranty", "label": "گارانتی",           "bonus": 0.06 },
+        { "id": "upgrade",  "label": "قطعات ارتقایافته",  "bonus": 0.07 }
+      ]
+    },
+    "baby": {
+      "name": "کودک و نوزاد",
+      "profile": { "drop": 0.65, "ageRate": 0.09, "useRate": 0.12, "usefulLife": 6, "floor": 0.05, "cap": 0.72, "usageLabel": "ماه استفاده", "usagePerYear": 12 },
+      "modules": ["time", "technical", "hygiene", "expiry"],
+      "bonuses": [
+        { "id": "box",       "label": "جعبه اصلی",             "bonus": 0.04 },
+        { "id": "safety",    "label": "استاندارد ایمنی معتبر", "bonus": 0.08 },
+        { "id": "sanitized", "label": "شسته و ضدعفونی",        "bonus": 0.05 }
+      ]
+    },
+    "industrial": {
+      "name": "صنعتی و تجهیزات حرفه‌ای",
+      "profile": { "drop": 0.82, "ageRate": 0.05, "useRate": 0.09, "usefulLife": 15, "floor": 0.15, "cap": 0.88, "usageLabel": "ساعت کارکرد", "usagePerYear": 2000 },
+      "modules": ["time", "technical", "legal", "logistics"],
+      "bonuses": [
+        { "id": "manual",  "label": "دفترچه فنی",          "bonus": 0.03 },
+        { "id": "service", "label": "سرویس مستند",         "bonus": 0.07 },
+        { "id": "spares",  "label": "قطعات یدکی همراه",    "bonus": 0.05 },
+        { "id": "invoice", "label": "فاکتور رسمی",         "bonus": 0.04 }
+      ]
+    }
+  }
+}
