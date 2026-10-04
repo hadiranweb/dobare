@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import "./globals.css";
 
-const title = "دوباره | چیزهای خوب، یک زندگی تازه";
+const title = "دوباره | فروشی‌های نو و کارکرده من";
 const description = "یک ویترین کوچک و صمیمی برای چیزهای دوست‌داشتنی که آماده‌اند به خانه‌ی تازه‌ای بروند.";
 
 export const metadata: Metadata = {
