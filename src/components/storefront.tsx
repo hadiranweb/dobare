@@ -6,7 +6,7 @@ import { BrandMark } from "@/components/brand-logo";
 
 type ProductImage = { imageUrl: string; thumbUrl: string | null };
 type ProductSpec = { key: string; value: string };
-type Product = { id: number; title: string; description: string; price: number; newPrice: number | null; specs: ProductSpec[]; imageUrl: string; thumbUrl: string | null; images: ProductImage[]; category: string; condition: string; available: boolean; reservedAt: string | null };
+type Product = { id: number; title: string; description: string; price: number; sellerName: string; newPrice: number | null; specs: ProductSpec[]; imageUrl: string; thumbUrl: string | null; images: ProductImage[]; category: string; condition: string; available: boolean; reservedAt: string | null };
 const formatPrice = (price: number) => new Intl.NumberFormat("fa-IR").format(price);
 const heroImage = "/hero.webp";
 
@@ -19,7 +19,7 @@ export default function Storefront({ initialProducts }: { initialProducts: Produ
   const [phone, setPhone] = useState("");
   const [name, setName] = useState("");
   const [message, setMessage] = useState("");
-  const [contact, setContact] = useState<{ phone?: string; telegram?: string } | null>(null);
+  const [contact, setContact] = useState<{ name: string; phone?: string; telegram?: string } | null>(null);
   const [reservationHours, setReservationHours] = useState<number | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -138,7 +138,7 @@ export default function Storefront({ initialProducts }: { initialProducts: Produ
     <footer className="footer"><div className="container footer-inner"><a href="#top" className="brand footer-brand" aria-label="دوباره، برگشت به بالای صفحه"><BrandMark /><span>دوباره<span className="brand-dot">.</span></span></a><span>چیزهای خوب، یک زندگی تازه ♡</span><a href="#top">برگشت به بالا ↑</a></div></footer>
 
     {selected && <div className="modal-backdrop" onMouseDown={(e) => { if (e.target === e.currentTarget) setSelected(null); }}><div className={view === "details" && !success ? "modal pd-modal" : "modal"} role="dialog" aria-modal="true" aria-labelledby="modal-title"><button className="modal-close" aria-label="بستن" onClick={() => setSelected(null)}><X size={21} /></button>
-      {success ? <div className="success-view"><div className="success-icon"><Check size={32} /></div><h2 id="modal-title">شماره‌ت رسید! ♡</h2><p>چه خوب که «{selected.title}» رو پسندیدی. به‌زودی باهات تماس می‌گیرم تا با هم هماهنگ کنیم.</p>{reservationHours ? <div className="reserve-note">⏳ این وسیله تا {reservationHours.toLocaleString("fa-IR")} ساعت برات رزرو شد؛ اگه هماهنگ نشدیم، بعدش دوباره آزاد می‌شه.</div> : null}{contact ? <div className="contact-card"><span className="contact-title">اگه عجله داری، مستقیم با من در تماس باش:</span>{contact.phone && <a className="contact-phone" href={`tel:${contact.phone}`} dir="ltr">{contact.phone.replace(/(\d{4})(\d{3})(\d{4})/, "$1 $2 $3")}</a>}<div className="contact-actions">{contact.telegram && <a className="button contact-telegram" href={`https://t.me/${contact.telegram}`} target="_blank" rel="noreferrer">تلگرام <Send size={16} /></a>}<button className="button button-primary" onClick={() => setSelected(null)}>بله <Check size={16} /></button></div></div> : <button className="button button-primary" onClick={() => setSelected(null)}>خیلی هم عالی <ArrowLeft size={18} /></button>}</div>
+      {success ? <div className="success-view"><div className="success-icon"><Check size={32} /></div><h2 id="modal-title">شماره‌ت رسید! ♡</h2><p>چه خوب که «{selected.title}» رو پسندیدی. به‌زودی باهات تماس می‌گیرم تا با هم هماهنگ کنیم.</p>{reservationHours ? <div className="reserve-note">⏳ این وسیله تا {reservationHours.toLocaleString("fa-IR")} ساعت برات رزرو شد؛ اگه هماهنگ نشدیم، بعدش دوباره آزاد می‌شه.</div> : null}{contact ? <div className="contact-card"><span className="contact-title">فروشنده‌ی این وسیله: <strong>{contact.name}</strong></span><span className="contact-subtitle">اگر عجله داری، مستقیم تماس بگیر:</span>{contact.phone && <a className="contact-phone" href={`tel:${contact.phone}`} dir="ltr">{contact.phone.replace(/(\d{4})(\d{3})(\d{4})/, "$1 $2 $3")}</a>}<div className="contact-actions">{contact.telegram && <a className="button contact-telegram" href={`https://t.me/${contact.telegram}`} target="_blank" rel="noreferrer">تلگرام <Send size={16} /></a>}<button className="button button-primary" onClick={() => setSelected(null)}>بله <Check size={16} /></button></div></div> : <button className="button button-primary" onClick={() => setSelected(null)}>خیلی هم عالی <ArrowLeft size={18} /></button>}</div>
         : view === "details" ? <>
           <div className="pd-gallery">
             <div className="pd-track" ref={galleryRef} onScroll={onGalleryScroll} dir="ltr">
@@ -152,7 +152,7 @@ export default function Storefront({ initialProducts }: { initialProducts: Produ
           </div>
           {selectedImages.length > 1 && <div className="pd-thumbs" role="tablist" aria-label="عکس‌های وسیله">{selectedImages.map((img, i) => <button key={`${img.imageUrl}-t${i}`} className={i === galleryIndex ? "pd-thumb active" : "pd-thumb"} style={{ backgroundImage: `url(${img.thumbUrl || img.imageUrl})` }} aria-label={`عکس ${(i + 1).toLocaleString("fa-IR")}`} onClick={() => goToImage(i)} />)}</div>}
           <div className="pd-info">
-            <div className="pd-chips"><span className="pd-chip">{selected.category}</span><span className="pd-chip pd-chip-condition">✦ {selected.condition}</span></div>
+            <div className="pd-chips"><span className="pd-chip">{selected.category}</span><span className="pd-chip pd-chip-seller">فروشنده: {selected.sellerName}</span><span className="pd-chip pd-chip-condition">✦ {selected.condition}</span></div>
             <h2 id="modal-title">{selected.title}</h2>
             <div className="pd-price-row">
               <div className="pd-price-main">

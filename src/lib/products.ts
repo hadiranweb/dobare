@@ -1,6 +1,7 @@
 import { db } from "@/db";
 import { productImages, products } from "@/db/schema";
 import { asc } from "drizzle-orm";
+import { getSeller } from "@/lib/sellers";
 
 // فروشگاه از اول خالی شروع می‌شود — وسایل واقعی از پنل مدیریت (/admin) اضافه می‌شوند
 export type ProductImage = { imageUrl: string; thumbUrl: string | null };
@@ -19,6 +20,7 @@ export async function getProducts() {
   // هر کالا حداقل یک عکس دارد؛ برای اطمینان کاور به‌عنوان fallback
   return items.map(p => ({
     ...p,
+    sellerName: getSeller(p.sellerKey).name,
     images: byProduct.get(p.id)?.length ? byProduct.get(p.id)! : [{ imageUrl: p.imageUrl, thumbUrl: p.thumbUrl }],
   }));
 }

@@ -8,6 +8,8 @@ export const products = pgTable("products", {
   title: text("title").notNull(),
   description: text("description").notNull(),
   price: integer("price").notNull(),
+  // فروشنده‌ی متصل به کالا: primary یا secondary (اطلاعات تماس از ENV خوانده می‌شود)
+  sellerKey: text("seller_key").notNull().default("primary"),
   // نسبت دلاری کالا — قیمت تومانی = نسبت × میانگین دلار هفته (تنظیمات داشبورد)
   usdRatio: doublePrecision("usd_ratio"),
   // قیمت نو‌ی محصول (اختیاری) — برای نمایش مقایسه‌ای «چند ارزون‌تر از نو» به خریدار
@@ -38,6 +40,8 @@ export const inquiries = pgTable("inquiries", {
   id: serial("id").primaryKey(),
   productId: integer("product_id").references(() => products.id, { onDelete: "set null" }),
   productTitle: text("product_title").notNull(),
+  // snapshot فروشنده هنگام ثبت درخواست؛ برای اعلان‌ها و اتصال پیامکی آینده
+  sellerKey: text("seller_key").notNull().default("primary"),
   phone: text("phone").notNull(),
   name: text("name"),
   message: text("message"),

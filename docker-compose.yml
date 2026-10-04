@@ -43,8 +43,11 @@ services:
       RESERVATION_HOURS: ${RESERVATION_HOURS:-6}
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
       TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID:-}
+      SELLER_NAME: ${SELLER_NAME:-}
       SELLER_PHONE: ${SELLER_PHONE:-}
       SELLER_TELEGRAM: ${SELLER_TELEGRAM:-}
+      SELLER_2_NAME: ${SELLER_2_NAME:-}
+      SELLER_2_PHONE: ${SELLER_2_PHONE:-}
       UPLOAD_DIR: /app/data/uploads
     volumes:
       - ./data/uploads:/app/data/uploads

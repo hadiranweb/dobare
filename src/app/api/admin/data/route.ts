@@ -3,6 +3,7 @@ import { inquiries, productImages, products } from "@/db/schema";
 import { isAdmin } from "@/lib/admin-auth";
 import { getUsdRate } from "@/lib/price-engine";
 import { RESERVATION_HOURS } from "@/lib/reservation";
+import { getSellers, isConfiguredSeller } from "@/lib/sellers";
 import { deleteLocalImages, isLocalImageUrl } from "@/lib/storage";
 import { asc, desc, eq } from "drizzle-orm";
 
@@ -34,7 +35,13 @@ async function productsWithImages() {
 export async function GET(request: Request) {
   if (!isAdmin(request)) return unauthorized();
   const [items, leads, usdRate] = await Promise.all([productsWithImages(), db.select().from(inquiries).orderBy(desc(inquiries.createdAt)), getUsdRate()]);
-  return Response.json({ products: items, inquiries: leads, reservationHours: RESERVATION_HOURS, usdRate });
+  return Response.json({
+    products: items,
+    inquiries: leads,
+    reservationHours: RESERVATION_HOURS,
+    usdRate,
+    sellers: getSellers().map(({ key, name }) => ({ key, name })),
+  });
 }
 
 // اعتبارسنجی یک عکس: آپلود محلی (نام تولیدشده توسط خود سیستم) یا لینک خارجی http(s)
@@ -59,6 +66,11 @@ async function parseProduct(body: Record<string, unknown>) {
   const category = String(body.category || "متفرقه").trim().slice(0, 60);
   const condition = String(body.condition || "تمیز و سالم").trim().slice(0, 60);
   if (!title || !description) throw new Error("نام و توضیح معتبر وارد کنید.");
+
+  const sellerKey = String(body.sellerKey || "primary");
+  if (!isConfiguredSeller(sellerKey)) {
+    throw new Error("فروشنده انتخاب‌شده در تنظیمات لیارا کامل تعریف نشده است.");
+  }
 
   // ── موتور قیمت: دو حالت — «نسبت دلاری» مستقیم، یا «تومان» (نسبت = قیمت ÷ نرخ دلار) ──
   const usdRate = await getUsdRate();
@@ -108,7 +120,7 @@ async function parseProduct(body: Record<string, unknown>) {
   const available = body.available !== false;
   // کاور (ستون‌های محصول) همیشه عکس اول است — بقیه‌ی بخش‌های برنامه (کارت‌ها، بات، ...) فقط همین را می‌بینند
   return {
-    values: { title, description, category, condition, newPrice, usdRatio, specs: specs.length ? specs : null, imageUrl: images[0].imageUrl, thumbUrl: images[0].thumbUrl, price, available, ...(available ? { reservedAt: null } : {}) },
+    values: { title, description, category, condition, sellerKey, newPrice, usdRatio, specs: specs.length ? specs : null, imageUrl: images[0].imageUrl, thumbUrl: images[0].thumbUrl, price, available, ...(available ? { reservedAt: null } : {}) },
     images,
   };
 }
