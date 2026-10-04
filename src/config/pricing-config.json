@@ -25,7 +25,6 @@
       "unit": "تومان",
       "min": 0,
       "required": true,
-      "help": "ارزان‌ترین فروشنده موجود، نه گران‌ترین",
       "role": "base"
     },
     "generation": {
