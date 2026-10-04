@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { appSettings, products } from "@/db/schema";
+import { appSettings, productGroups, products } from "@/db/schema";
 import { eq, isNotNull, isNull, sql } from "drizzle-orm";
 
 // ── موتور قیمت ─────────────────────────────────────────────
@@ -50,6 +50,11 @@ export async function updateUsdRateAndPrices(rate: number): Promise<number> {
       .where(isNotNull(products.usdRatio))
       .returning({ id: products.id });
 
-    return updated.length;
+    const updatedGroups = await tx
+      .update(productGroups)
+      .set({ price: sql`round(${productGroups.usdRatio} * ${rate})::integer` })
+      .returning({ id: productGroups.id });
+
+    return updated.length + updatedGroups.length;
   });
 }

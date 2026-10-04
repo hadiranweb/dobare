@@ -1,4 +1,4 @@
-import { boolean, doublePrecision, integer, jsonb, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
+import { boolean, doublePrecision, integer, jsonb, pgTable, primaryKey, serial, text, timestamp } from "drizzle-orm/pg-core";
 
 // مشخصات تکمیلی کالا — قیمت نو (اختیاری) و جدول مشخصات { key, value }
 export type ProductSpec = { key: string; value: string };
@@ -36,9 +36,29 @@ export const productImages = pgTable("product_images", {
   position: integer("position").notNull().default(0),
 });
 
+// گروه فروش: چند کالای هم‌فروشنده که فقط به‌صورت یک بسته در ویترین عرضه می‌شوند.
+export const productGroups = pgTable("product_groups", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  price: integer("price").notNull(),
+  usdRatio: doublePrecision("usd_ratio").notNull(),
+  sellerKey: text("seller_key").notNull().default("primary"),
+  available: boolean("available").notNull().default(true),
+  reservedAt: timestamp("reserved_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const productGroupItems = pgTable("product_group_items", {
+  groupId: integer("group_id").notNull().references(() => productGroups.id, { onDelete: "cascade" }),
+  productId: integer("product_id").notNull().references(() => products.id, { onDelete: "restrict" }).unique(),
+  position: integer("position").notNull().default(0),
+}, table => [primaryKey({ columns: [table.groupId, table.productId] })]);
+
 export const inquiries = pgTable("inquiries", {
   id: serial("id").primaryKey(),
   productId: integer("product_id").references(() => products.id, { onDelete: "set null" }),
+  groupId: integer("group_id").references(() => productGroups.id, { onDelete: "set null" }),
   productTitle: text("product_title").notNull(),
   // snapshot فروشنده هنگام ثبت درخواست؛ برای اعلان‌ها و اتصال پیامکی آینده
   sellerKey: text("seller_key").notNull().default("primary"),

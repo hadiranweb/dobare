@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { inquiries, productImages, products } from "@/db/schema";
+import { inquiries, productGroupItems, productGroups, productImages, products } from "@/db/schema";
 import { isAdmin } from "@/lib/admin-auth";
 import { getUsdRate } from "@/lib/price-engine";
 import { RESERVATION_HOURS } from "@/lib/reservation";
@@ -34,9 +34,28 @@ async function productsWithImages() {
 
 export async function GET(request: Request) {
   if (!isAdmin(request)) return unauthorized();
-  const [items, leads, usdRate] = await Promise.all([productsWithImages(), db.select().from(inquiries).orderBy(desc(inquiries.createdAt)), getUsdRate()]);
+  const [items, leads, usdRate, groups, groupItems] = await Promise.all([
+    productsWithImages(),
+    db.select().from(inquiries).orderBy(desc(inquiries.createdAt)),
+    getUsdRate(),
+    db.select().from(productGroups).orderBy(desc(productGroups.id)),
+    db.select().from(productGroupItems).orderBy(asc(productGroupItems.position)),
+  ]);
+  const productById = new Map(items.map(p => [p.id, p]));
+  const adminGroups = groups.map(group => {
+    const members = groupItems
+      .filter(item => item.groupId === group.id)
+      .map(item => productById.get(item.productId))
+      .filter((p): p is NonNullable<typeof p> => Boolean(p));
+    return {
+      ...group,
+      memberIds: members.map(p => p.id),
+      members: members.map(p => ({ id: p.id, title: p.title, price: p.price, imageUrl: p.imageUrl, thumbUrl: p.thumbUrl })),
+    };
+  });
   return Response.json({
     products: items,
+    groups: adminGroups,
     inquiries: leads,
     reservationHours: RESERVATION_HOURS,
     usdRate,
@@ -164,6 +183,8 @@ export async function DELETE(request: Request) {
   if (!isAdmin(request)) return unauthorized();
   const id = Number(new URL(request.url).searchParams.get("id"));
   if (!Number.isInteger(id) || id < 1) return Response.json({ error: "شناسه نامعتبر است." }, { status: 400 });
+  const [membership] = await db.select().from(productGroupItems).where(eq(productGroupItems.productId, id)).limit(1);
+  if (membership) return Response.json({ error: "این کالا عضو یک گروه است؛ ابتدا آن را از گروه خارج کنید." }, { status: 409 });
   const rows = await db.select().from(productImages).where(eq(productImages.productId, id));
   const [removed] = await db.delete(products).where(eq(products.id, id)).returning();
   // فایل‌های عکس محلیِ کالای حذفشده هم پاک می‌شوند

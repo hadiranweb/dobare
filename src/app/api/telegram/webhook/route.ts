@@ -1,6 +1,7 @@
 import { db } from "@/db";
-import { inquiries, products } from "@/db/schema";
+import { inquiries, productGroupItems, products } from "@/db/schema";
 import { adminChatIds, statusKeyboard, telegramCall, telegramToken } from "@/lib/telegram";
+import { setGroupStatus } from "@/lib/group-status";
 import { desc, eq } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
@@ -73,13 +74,23 @@ async function handle(update: TgUpdate) {
       await telegramCall("answerCallbackQuery", { callback_query_id: cb.id });
       return;
     }
-    const [action, idStr] = (cb.data || "").split(":");
-    const id = Number(idStr);
+    const [action, target, targetId] = (cb.data || "").split(":");
+    const isGroup = target === "g";
+    const id = Number(isGroup ? targetId : target);
     if ((action === "sell" || action === "open") && Number.isInteger(id) && id >= 1) {
-      const [updated] = await db.update(products)
-        .set(action === "sell" ? { available: false, reservedAt: null } : { available: true, reservedAt: null })
-        .where(eq(products.id, id)).returning();
-      const label = !updated ? "کالا پیدا نشد." : action === "sell" ? `«${updated.title}» فروخته شد ✅` : `«${updated.title}» آزاد شد و دوباره قابل خرید است 🔓`;
+      if (!isGroup) {
+        const [membership] = await db.select().from(productGroupItems).where(eq(productGroupItems.productId, id)).limit(1);
+        if (membership) {
+          await telegramCall("answerCallbackQuery", { callback_query_id: cb.id, text: "این کالا عضو گروه است؛ وضعیت گروه را تغییر دهید." });
+          return;
+        }
+      }
+      const updated = isGroup
+        ? await setGroupStatus(id, action)
+        : (await db.update(products)
+            .set(action === "sell" ? { available: false, reservedAt: null } : { available: true, reservedAt: null })
+            .where(eq(products.id, id)).returning())[0];
+      const label = !updated ? "کالا یا گروه پیدا نشد." : action === "sell" ? `«${updated.title}» فروخته شد ✅` : `«${updated.title}» آزاد شد و دوباره قابل خرید است 🔓`;
       await telegramCall("answerCallbackQuery", { callback_query_id: cb.id, text: label });
       if (updated && cb.message) {
         await telegramCall("editMessageReplyMarkup", { chat_id: cb.message.chat.id, message_id: cb.message.message_id, reply_markup: { inline_keyboard: [] } });
@@ -123,6 +134,8 @@ async function handleCommand(chatId: string, text: string) {
     const action = firstWord === "/sold" || text.startsWith("فروخته") ? "sell" : "open";
     const id = parseId(rest || text);
     if (id === null) return void (await telegramCall("sendMessage", { chat_id: chatId, text: "شماره‌ی کالا را بنویس؛ مثلاً: /sold 3" }));
+    const [membership] = await db.select().from(productGroupItems).where(eq(productGroupItems.productId, id)).limit(1);
+    if (membership) return void (await telegramCall("sendMessage", { chat_id: chatId, text: "این کالا عضو یک گروه فروش است؛ وضعیت را از داشبورد یا دکمه‌ی پیام همان گروه تغییر دهید." }));
     const [updated] = await db.update(products)
       .set(action === "sell" ? { available: false, reservedAt: null } : { available: true, reservedAt: null })
       .where(eq(products.id, id)).returning();

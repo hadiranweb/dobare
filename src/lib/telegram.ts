@@ -37,11 +37,12 @@ export function adminChatIds(): string[] {
 }
 
 // دکمه‌های تغییر وضعیت کالا — زیر پیام اعلان درخواست و پیام‌های تأیید
-export function statusKeyboard(productId: number) {
+export function statusKeyboard(id: number, kind: "product" | "group" = "product") {
+  const target = kind === "group" ? `g:${id}` : String(id);
   return {
     inline_keyboard: [[
-      { text: "فروخته شد ✅", callback_data: `sell:${productId}` },
-      { text: "آزاد کن 🔓", callback_data: `open:${productId}` },
+      { text: "فروخته شد ✅", callback_data: `sell:${target}` },
+      { text: "آزاد کن 🔓", callback_data: `open:${target}` },
     ]],
   };
 }

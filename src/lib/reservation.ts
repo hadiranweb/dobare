@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { products } from "@/db/schema";
+import { productGroups, products } from "@/db/schema";
 import { and, eq, isNotNull, lte } from "drizzle-orm";
 
 // مدت رزرو وسیله پس از ثبت درخواست (بر حسب ساعت) — با متغیر محیطی RESERVATION_HOURS قابل تغییر است
@@ -15,6 +15,12 @@ export async function releaseExpiredReservations() {
     .set({ available: true, reservedAt: null })
     .where(and(eq(products.available, false), isNotNull(products.reservedAt), lte(products.reservedAt, cutoff)))
     .returning({ id: products.id });
-  if (released.length) console.log(`⏱ ${released.length} رزرو منقضی آزاد شد.`);
-  return released.length;
+  const releasedGroups = await db
+    .update(productGroups)
+    .set({ available: true, reservedAt: null })
+    .where(and(eq(productGroups.available, false), isNotNull(productGroups.reservedAt), lte(productGroups.reservedAt, cutoff)))
+    .returning({ id: productGroups.id });
+  const total = released.length + releasedGroups.length;
+  if (total) console.log(`⏱ ${total} رزرو منقضی آزاد شد.`);
+  return total;
 }
