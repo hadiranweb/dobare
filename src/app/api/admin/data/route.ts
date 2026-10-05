@@ -2,6 +2,7 @@ import { db } from "@/db";
 import { inquiries, productGroupItems, productGroups, productImages, products } from "@/db/schema";
 import { isAdmin } from "@/lib/admin-auth";
 import { getUsdRate } from "@/lib/price-engine";
+import { psychologicalPrice } from "@/lib/psychological-price";
 import { RESERVATION_HOURS } from "@/lib/reservation";
 import { getSellers, isConfiguredSeller } from "@/lib/sellers";
 import { deleteLocalImages, isLocalImageUrl } from "@/lib/storage";
@@ -102,11 +103,12 @@ async function parseProduct(body: Record<string, unknown>) {
     const r = Number(ratioRaw);
     if (!Number.isFinite(r) || r <= 0) throw new Error("نسبت دلاری باید عددی بزرگ‌تر از صفر باشد.");
     usdRatio = r;
-    price = Math.round(r * usdRate);
+    price = psychologicalPrice(r * usdRate);
     if (!Number.isSafeInteger(price) || price <= 0 || price > 2_147_483_647) throw new Error("قیمت محاسبه‌شده معتبر نیست.");
   } else {
-    price = Number(body.price);
-    if (!Number.isInteger(price) || price <= 0 || price > 2_147_483_647) throw new Error("قیمت باید عدد صحیحی بزرگ‌تر از صفر باشد.");
+    const rawPrice = Number(body.price);
+    if (!Number.isInteger(rawPrice) || rawPrice <= 0 || rawPrice > 2_147_483_647) throw new Error("قیمت باید عدد صحیحی بزرگ‌تر از صفر باشد.");
+    price = psychologicalPrice(rawPrice);
     usdRatio = price / usdRate;
   }
 

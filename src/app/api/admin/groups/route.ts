@@ -2,6 +2,7 @@ import { db } from "@/db";
 import { productGroupItems, productGroups, products } from "@/db/schema";
 import { isAdmin } from "@/lib/admin-auth";
 import { getUsdRate } from "@/lib/price-engine";
+import { psychologicalPrice } from "@/lib/psychological-price";
 import { isConfiguredSeller } from "@/lib/sellers";
 import { and, eq, inArray, ne } from "drizzle-orm";
 
@@ -45,10 +46,11 @@ async function parseGroup(body: Record<string, unknown>, currentGroupId?: number
   if (hasRatio) {
     usdRatio = Number(ratioRaw);
     if (!Number.isFinite(usdRatio) || usdRatio <= 0) throw new Error("نسبت دلاری گروه معتبر نیست.");
-    price = Math.round(usdRatio * usdRate);
+    price = psychologicalPrice(usdRatio * usdRate);
   } else {
-    price = Number(body.price);
-    if (!Number.isInteger(price) || price <= 0 || price > 2_147_483_647) throw new Error("قیمت گروه معتبر نیست.");
+    const rawPrice = Number(body.price);
+    if (!Number.isInteger(rawPrice) || rawPrice <= 0 || rawPrice > 2_147_483_647) throw new Error("قیمت گروه معتبر نیست.");
+    price = psychologicalPrice(rawPrice);
     usdRatio = price / usdRate;
   }
   if (!Number.isSafeInteger(price) || price <= 0 || price > 2_147_483_647) throw new Error("قیمت محاسبه‌شده گروه معتبر نیست.");

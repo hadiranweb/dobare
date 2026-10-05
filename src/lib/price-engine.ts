@@ -1,6 +1,7 @@
 import { db } from "@/db";
 import { appSettings, productGroups, products } from "@/db/schema";
 import { eq, isNotNull, isNull, sql } from "drizzle-orm";
+import { psychologicalPrice } from "@/lib/psychological-price";
 
 // ── موتور قیمت ─────────────────────────────────────────────
 // میانگین قیمت دلار در هفته در تنظیمات داشبورد ثبت می‌شود (کلید usd_rate در app_settings).
@@ -44,17 +45,27 @@ export async function updateUsdRateAndPrices(rate: number): Promise<number> {
       .values({ key: USD_RATE_KEY, value: String(rate) })
       .onConflictDoUpdate({ target: appSettings.key, set: { value: String(rate) } });
 
-    const updated = await tx
-      .update(products)
-      .set({ price: sql`round(${products.usdRatio} * ${rate})::integer` })
-      .where(isNotNull(products.usdRatio))
-      .returning({ id: products.id });
+    const productPrices = await tx
+      .select({ id: products.id, usdRatio: products.usdRatio })
+      .from(products)
+      .where(isNotNull(products.usdRatio));
+    const groupPrices = await tx
+      .select({ id: productGroups.id, usdRatio: productGroups.usdRatio })
+      .from(productGroups);
 
-    const updatedGroups = await tx
-      .update(productGroups)
-      .set({ price: sql`round(${productGroups.usdRatio} * ${rate})::integer` })
-      .returning({ id: productGroups.id });
+    // قیمت روان‌شناختی در آخرین مرحله و روی قیمت فروش نهایی اعمال می‌شود.
+    // نسبت دلاری دست‌نخورده می‌ماند تا تغییر بعدی نرخ از همان لنگر ارزی محاسبه شود.
+    for (const item of productPrices) {
+      const price = psychologicalPrice(Number(item.usdRatio) * rate);
+      if (!Number.isSafeInteger(price) || price <= 0 || price > 2_147_483_647) throw new Error("قیمت محاسبه‌شده‌ی کالا معتبر نیست.");
+      await tx.update(products).set({ price }).where(eq(products.id, item.id));
+    }
+    for (const group of groupPrices) {
+      const price = psychologicalPrice(Number(group.usdRatio) * rate);
+      if (!Number.isSafeInteger(price) || price <= 0 || price > 2_147_483_647) throw new Error("قیمت محاسبه‌شده‌ی گروه معتبر نیست.");
+      await tx.update(productGroups).set({ price }).where(eq(productGroups.id, group.id));
+    }
 
-    return updated.length + updatedGroups.length;
+    return productPrices.length + groupPrices.length;
   });
 }
