@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "دوباره | فروشی‌های نو و کارکرده من",
+    name: "دوباره | فروشی‌های نو و کارکرده‌ی من",
     short_name: "دوباره",
     description: "ویترین آنلاین وسایل دست دوم دوباره",
     start_url: "/",
