@@ -93,11 +93,11 @@ export default function Storefront({ initialProducts }: { initialProducts: Produ
       <div className="header-inner container">
         <a href="#top" className="brand" aria-label="دوباره، صفحه اصلی"><BrandMark priority /><span>دوباره<span className="brand-dot">.</span></span></a>
         <nav className={menuOpen ? "nav nav-open" : "nav"} aria-label="منوی اصلی">
-          <a href="#products" onClick={() => setMenuOpen(false)}>وسایل دوست‌داشتنی</a>
+          <a href="/product" onClick={() => setMenuOpen(false)}>وسایل دوست‌داشتنی</a>
           <a href="#how-it-works" onClick={() => setMenuOpen(false)}>چطور کار می‌کنه؟</a>
           <a href="#about" onClick={() => setMenuOpen(false)}>داستان ما</a>
         </nav>
-        <a className="header-cta" href="#products">یه نگاهی بنداز <ArrowUpLeft size={17} /></a>
+        <a className="header-cta" href="/product">یه نگاهی بنداز <ArrowUpLeft size={17} /></a>
         <button className="mobile-menu" aria-label="باز کردن منو" onClick={() => setMenuOpen(!menuOpen)}>{menuOpen ? <X size={24} /> : <Menu size={24} />}</button>
       </div>
     </header>
@@ -108,7 +108,7 @@ export default function Storefront({ initialProducts }: { initialProducts: Produ
           <div className="eyebrow"><span className="eyebrow-line" /> بازارچه‌ی کوچک وسایل فروشی من <Sparkles size={16} /></div>
           <h1>چیزهای خوب،<br /><span>یه زندگی تازه.</span></h1>
           <p className="hero-description">بعضی چیزها هنوز کلی قصه برای گفتن دارن. اینجا وسایلی رو می‌بینی که دیگه به کار من نمیان، اما شاید دقیقاً همون چیزی باشن که تو دنبالش بودی.</p>
-          <div className="hero-actions"><a href="#products" className="button button-primary">ببین چی اینجاست <ArrowLeft size={19} /></a><a href="#how-it-works" className="text-link">چطور کار می‌کنه؟ <ChevronDown size={17} /></a></div>
+          <div className="hero-actions"><a href="/product" className="button button-primary">ببین چی اینجاست <ArrowLeft size={19} /></a><a href="#how-it-works" className="text-link">چطور کار می‌کنه؟ <ChevronDown size={17} /></a></div>
           <div className="hero-note"><span className="mini-avatars"><span>✿</span><span>♥</span><span>✦</span></span><span>ساده، بی‌واسطه و شخصی</span></div>
         </div>
         <div className="hero-visual">
@@ -134,7 +134,7 @@ export default function Storefront({ initialProducts }: { initialProducts: Produ
 
       <section className="how-section" id="how-it-works"><div className="container how-inner"><div className="how-intro"><div className="section-kicker">راحت‌تر از چیزی که فکر می‌کنی</div><h2>همین‌قدر<br /><em>ساده و سریع</em></h2><p>اینجا خبری از سبد خرید و حساب کاربری و کارهای پیچیده نیست. فقط یه ارتباط ساده و انسانی.</p><div className="scribble-arrow">⤹</div></div><div className="steps"><div className="step"><span className="step-number">۰۱</span><div className="step-icon">👀</div><div><h3>یه گشتی بزن</h3><p>روی هر کارت بزن تا جزئیات و همه‌ی عکس‌هاش رو ببینی.</p></div></div><div className="step"><span className="step-number">۰۲</span><div className="step-icon">📱</div><div><h3>شماره‌ت رو بذار</h3><p>فقط شماره‌ت رو ثبت کن تا بدونم کدوم وسیله رو می‌خوای.</p></div></div><div className="step"><span className="step-number">۰۳</span><div className="step-icon">☕</div><div><h3>با هم حرف می‌زنیم</h3><p>باهات تماس می‌گیرم و بقیه‌اش رو خودمون هماهنگ می‌کنیم.</p></div></div></div></div></section>
 
-      <section className="about-section container" id="about"><div className="about-icon"><Heart size={28} fill="currentColor" /></div><div><h2>از یه خونه، برای یه خونه‌ی دیگه.</h2><p>اینجا یه فروشگاه بزرگ نیست؛ یه گوشه‌ی کوچیکه برای وسایلی که هنوز می‌تونن به کار کسی بیان. شاید خونه‌ی بعدی‌شون، خونه‌ی تو باشه.</p></div><a href="#products" className="about-link">دیدن وسایل <ArrowLeft size={18} /></a></section>
+      <section className="about-section container" id="about"><div className="about-icon"><Heart size={28} fill="currentColor" /></div><div><h2>از یه خونه، برای یه خونه‌ی دیگه.</h2><p>اینجا یه فروشگاه بزرگ نیست؛ یه گوشه‌ی کوچیکه برای وسایلی که هنوز می‌تونن به کار کسی بیان. شاید خونه‌ی بعدی‌شون، خونه‌ی تو باشه.</p></div><a href="/product" className="about-link">دیدن وسایل <ArrowLeft size={18} /></a></section>
     </main>
     <footer className="footer"><div className="container footer-inner"><a href="#top" className="brand footer-brand" aria-label="دوباره، برگشت به بالای صفحه"><BrandMark /><span>دوباره<span className="brand-dot">.</span></span></a><span>حس‌های خوب، وسایل خوب‌تر</span><a href="#top">برگشت به بالا ↑</a></div></footer>
 

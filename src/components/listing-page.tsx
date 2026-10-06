@@ -60,10 +60,10 @@ export function ListingPage({ listing }: { listing: SerializedPublicListing }) {
   };
 
   return <div className="site-shell listing-shell">
-    <header className="header"><div className="header-inner container"><Link href="/" className="brand" aria-label="دوباره، صفحه اصلی"><BrandMark priority /><span>دوباره<span className="brand-dot">.</span></span></Link><Link href="/#products" className="header-cta listing-back"><ArrowRight size={17} /> برگشت به ویترین</Link></div></header>
+    <header className="header"><div className="header-inner container"><Link href="/" className="brand" aria-label="دوباره، صفحه اصلی"><BrandMark priority /><span>دوباره<span className="brand-dot">.</span></span></Link><Link href="/product" className="header-cta listing-back"><ArrowRight size={17} /> برگشت به ویترین</Link></div></header>
 
     <main className="listing-page container">
-      <div className="listing-toolbar"><Link href="/#products"><ArrowRight size={16} /> همه‌ی وسایل</Link><button type="button" onClick={share}>{copied ? <Check size={16} /> : <Share2 size={16} />}{copied ? "لینک کپی شد" : "اشتراک‌گذاری"}</button></div>
+      <div className="listing-toolbar"><Link href="/product"><ArrowRight size={16} /> همه‌ی وسایل</Link><button type="button" onClick={share}>{copied ? <Check size={16} /> : <Share2 size={16} />}{copied ? "لینک کپی شد" : "اشتراک‌گذاری"}</button></div>
       <article className="listing-card">
         <section className="listing-gallery">
           <div className={listing.kind === "group" ? "listing-main-image group-listing-image" : "listing-main-image"}><img src={images[imageIndex]?.imageUrl || listing.imageUrl} alt={`${listing.title} — تصویر ${(imageIndex + 1).toLocaleString("fa-IR")}`} /></div>
@@ -87,6 +87,6 @@ export function ListingPage({ listing }: { listing: SerializedPublicListing }) {
         </section>
       </article>
     </main>
-    <footer className="footer"><div className="container footer-inner"><Link href="/" className="brand footer-brand"><BrandMark /><span>دوباره<span className="brand-dot">.</span></span></Link><span>حس‌های خوب، وسایل خوب‌تر</span><Link href="/#products">دیدن همه‌ی وسایل</Link></div></footer>
+    <footer className="footer"><div className="container footer-inner"><Link href="/" className="brand footer-brand"><BrandMark /><span>دوباره<span className="brand-dot">.</span></span></Link><span>حس‌های خوب، وسایل خوب‌تر</span><Link href="/product">دیدن همه‌ی وسایل</Link></div></footer>
   </div>;
 }
