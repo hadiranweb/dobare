@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import "./globals.css";
+import "./listing.css";
 
 const title = "دوباره | فروشی‌های نو و کارکرده‌ی من";
 const description = "یک ویترین کوچک و صمیمی برای چیزهای دوست‌داشتنی که آماده‌اند به خانه‌ی تازه‌ای بروند.";

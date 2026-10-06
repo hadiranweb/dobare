@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, ArrowUpLeft, Check, ChevronDown, ChevronLeft, ChevronRight, Clock, Heart, Leaf, Menu, Phone, Send, Sparkles, X } from "lucide-react";
+import { ArrowLeft, ArrowUpLeft, Check, ChevronDown, ChevronLeft, ChevronRight, Clock, Heart, Leaf, Menu, Phone, Send, Share2, Sparkles, X } from "lucide-react";
 import { BrandMark } from "@/components/brand-logo";
 
 type ProductImage = { imageUrl: string; thumbUrl: string | null };
@@ -166,6 +166,7 @@ export default function Storefront({ initialProducts }: { initialProducts: Produ
             <p className="pd-desc">{selected.description}</p>
             {selected.kind === "group" && <div className="group-members"><h4>این بسته شامل چیست؟</h4>{selected.members.map(member => <div className="group-member" key={member.id}><div className="group-member-head"><img src={member.thumbUrl || member.imageUrl} alt={member.title} /><div><strong>{member.title}</strong><span>{member.category} · {formatPrice(member.price)} تومان</span><p>{member.description}</p></div></div>{member.images.length > 1 && <div className="group-member-images">{member.images.map((img, i) => <img key={`${img.imageUrl}-${i}`} src={img.thumbUrl || img.imageUrl} alt={`${member.title} — عکس ${(i + 1).toLocaleString("fa-IR")}`} />)}</div>}{member.specs.length > 0 && <div className="group-member-specs">{member.specs.map((spec, i) => <span key={`${spec.key}-${i}`}><b>{spec.key}</b>{spec.value}</span>)}</div>}</div>)}</div>}
             {selected.specs?.length > 0 && <div className="pd-specs"><h4>مشخصات</h4>{selected.specs.map((s, i) => <div className="pd-spec-row" key={`${s.key}-${i}`}><span className="pd-spec-key">{s.key}</span><span className="pd-spec-value">{s.value}</span></div>)}</div>}
+            <a className="pd-direct-link" href={`/${selected.kind === "group" ? "group" : "product"}/${selected.id}`}>صفحه‌ی اختصاصی و اشتراک لینک <Share2 size={15} /></a>
             {selected.available
               ? <button className="button button-primary pd-cta" onClick={() => setView("inquiry")}>می‌خوامش! شماره‌ام رو بذار ☎ <ArrowLeft size={18} /></button>
               : <div className="pd-status-note">{selected.reservedAt ? "این وسیله فعلاً توسط شخص دیگری رزرو شده؛ اگه آزاد شد دوباره اینجا دیده می‌شه." : "این وسیله واگذار شده و دیگه موجود نیست."}</div>}
