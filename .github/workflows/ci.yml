@@ -35,7 +35,7 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: npm ci
+      - run: npm ci --include=dev
       - run: npm run typecheck
 
   build:
@@ -51,7 +51,7 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: npm ci
+      - run: npm ci --include=dev
       - run: npm run build
 
   lint-diagnostics:
@@ -64,7 +64,7 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: npm ci
+      - run: npm ci --include=dev
       - name: Report lint without blocking gates
         shell: bash
         run: |
@@ -127,10 +127,6 @@ jobs:
           if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ github.event.inputs.no_cache }}" = "true" ]; then
             no_cache=1
             echo 'Liara cache: --no-cache (workflow_dispatch)'
-          fi
-          if [ "${{ github.run_attempt }}" -gt 1 ]; then
-            no_cache=1
-            echo "Liara cache: --no-cache (run attempt ${{ github.run_attempt }})"
           fi
           if git log -1 --pretty=%B | grep -qF '[no-cache]'; then
             no_cache=1
