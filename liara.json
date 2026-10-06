@@ -11,5 +11,8 @@
       "name": "uploads",
       "mountTo": "/app/data/uploads"
     }
-  ]
+  ],
+  "build": {
+    "location": "germany"
+  }
 }
